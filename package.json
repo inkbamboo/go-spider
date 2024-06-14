@@ -1,0 +1,21 @@
+{
+  "name": "go-spider",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "",
+  "license": "MIT",
+  "scripts": {
+    "commit": "git-cz",
+    "build": "goreleaser build --snapshot --rm-dist",
+    "pm2:start:kespider:dev": "goreleaser build --snapshot --rm-dist --id kespider && OS=linux ENV=dev pm2 startOrRestart ./.ecosystem.config.js --only kespider",
+
+  },
+  "config": {
+    "commitizen": {
+      "path": "git-cz"
+    }
+  },
+  "devDependencies": {
+    "git-cz": "^4.7.6"
+  }
+}
