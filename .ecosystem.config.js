@@ -9,41 +9,29 @@ const configs = {
     max_restarts: 500,
     exec_mode: "fork",
     interpreter: "none",
-    log_file: '../../logs/boxserver/boxserver.log',
+    log_file: '../../logs/go-spider/go-spider.log',
     combine_logs: true,
     watch,
     env_uat: {
-        env: 'uat',
+        env: 'dev',
         GO_ENV: go_env
     },
     env_stage: {
-        env: 'stage',
-        GO_ENV: go_env
-    },
-    env_sit: {
-        env: 'sit',
-        GO_ENV: go_env
-    },
-    env_stress: {
-        env: 'stress',
+        env: 'test',
         GO_ENV: go_env
     },
     env_prod: {
         env: 'prod',
-        GO_ENV: go_env
-    },
-    env_preprod: {
-        env: 'preprod',
         GO_ENV: go_env
     }
 }
 module.exports = {
     apps: [
         {
-            name: "boxconfidence-box-server",
-            cwd: `./build/box-server_${os}_amd64`,
-            script: "boxconfidence-box-server",
-            args:`--env ${env} s`,
+            name: "ke-area-spider",
+            cwd: `./dist/kespider_${os}_amd64`,
+            script: "kespider",
+            args:`--env ${env} --spider area ke`,
             ...configs,
             max_restarts: 10,
         }
