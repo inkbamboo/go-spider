@@ -5,10 +5,8 @@
   "author": "",
   "license": "MIT",
   "scripts": {
-    "commit": "git-cz",
-    "build": "goreleaser build --snapshot --rm-dist",
-    "pm2:start:kespider:dev": "goreleaser build --snapshot --rm-dist --id kespider && OS=linux ENV=dev pm2 startOrRestart ./.ecosystem.config.js --only kespider",
-
+    "build": "goreleaser build --snapshot --clean",
+    "pm2:start:kespider:dev": "goreleaser build --snapshot --clean --id kespider && OS=linux ENV=dev pm2 startOrRestart ./.ecosystem.config.js --only kespider"
   },
   "config": {
     "commitizen": {
