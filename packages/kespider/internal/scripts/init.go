@@ -1,10 +1,11 @@
 package scripts
 
 import (
-	"github.com/inkbamboo/go-spider/packages/pkg"
+	"github.com/inkbamboo/ares"
 	"github.com/urfave/cli/v2"
 )
 
 func Init(c *cli.Context) {
-	pkg.InitConfig(c.String("env"))
+	ares.InitConfigWithPath(c.String("env"), c.String("conf"))
+	ares.GetConfig().Set("env", c.String("env"))
 }

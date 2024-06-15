@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/inkbamboo/go-spider/packages/kespider/internal/scripts"
 	"github.com/labstack/gommon/color"
 	"github.com/urfave/cli/v2"
 	"os"
@@ -18,6 +19,8 @@ func Commands() []*cli.Command {
 			Usage:       "Run kespider",
 			Description: "Run kespider",
 			Action: func(c *cli.Context) error {
+				scripts.Init(c)
+				scripts.RunAreaSpider()
 				return nil
 			},
 		},

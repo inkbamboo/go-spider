@@ -4,9 +4,23 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"
+	"sync"
 )
 
-func main() {
+type AreaSpider struct{}
+
+var (
+	areaSpider     *AreaSpider
+	areaSpiderOnce sync.Once
+)
+
+func GetAreaSpider() *AreaSpider {
+	areaSpiderOnce.Do(func() {
+		areaSpider = &AreaSpider{}
+	})
+	return areaSpider
+}
+func (s *AreaSpider) Start() {
 	c := colly.NewCollector()
 	//c.Limit(&colly.LimitRule{
 	//	DomainGlob:  "sjz.ke.com/*",
