@@ -1,0 +1,11 @@
+swaggeApi: false
+debug: false
+autoMigrate: true
+databases:
+  - host: 39.98.66.22
+    dialect: mongodb
+    port: 27017
+    username: root
+    password: 123456
+    dbName: ke_sjz
+    alias: sjz
