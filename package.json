@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts": {
     "build": "goreleaser build --snapshot --clean",
-    "pm2:start:kespider:dev": "goreleaser build --snapshot --clean --id kespider && OS=linux ENV=dev pm2 startOrRestart ./.ecosystem.config.js --only kespider"
+    "pm2:start:ke:area:spider:dev": "goreleaser build --snapshot --clean --id kespider && OS=linux ENV=dev pm2 startOrRestart ./.ecosystem.config.js --only ke-area-spide",
+    "pm2:start:ke:ershou:spider:dev": "goreleaser build --snapshot --clean --id kespider && OS=linux ENV=dev pm2 startOrRestart ./.ecosystem.config.js --only ke-ershou-spide"
   },
   "config": {
     "commitizen": {
