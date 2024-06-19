@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"strings"
 	"sync"
+	"time"
 )
 
 type ErShouSpider struct{}
@@ -42,11 +43,11 @@ func (s *ErShouSpider) findAllArea() ([]*model.Area, error) {
 }
 
 func (s *ErShouSpider) Start() {
-	areas, _ := s.findAllArea()
-	for _, area := range areas {
-		s.parseOnArea(area)
-	}
-	//s.parseHouseList(&model.Area{DistrictId: "damacun"}, 1)
+	//areas, _ := s.findAllArea()
+	//for _, area := range areas {
+	//	s.parseOnArea(area)
+	//}
+	s.parseHouseList(&model.Area{DistrictId: "damacun"}, 1)
 }
 func (s *ErShouSpider) parseOnArea(area *model.Area) {
 	c := colly.NewCollector()
@@ -70,16 +71,18 @@ func (s *ErShouSpider) parseHouseList(area *model.Area, page int64) {
 			if !strings.HasSuffix(href, ".html") {
 				return
 			}
-			houseItem := &model.ErShou{}
+			houseItem := &model.ErShouFang{}
 			houseItem.AreaName = area.AreaName
 			houseItem.DistrictName = area.DistrictName
 			houseItem.HousedelId, _ = lo.Last(strings.Split(href, "/"))
 			houseItem.HousedelId = strings.TrimSuffix(houseItem.HousedelId, ".html")
 			houseItem.XiaoquName = el.DOM.Find(".positionInfo").Find("a").Text()
-			houseItem.TotalPrice = el.DOM.Find(".totalPrice").Find("span").Text()
-			houseItem.UnitPrice = el.DOM.Find(".unitPrice").Find("span").Text()
-			houseItem.UnitPrice = strings.ReplaceAll(houseItem.UnitPrice, "元/平", "")
-			houseItem.UnitPrice = strings.ReplaceAll(houseItem.UnitPrice, ",", "")
+			priceInfo := &model.PriceInfo{}
+			priceInfo.TotalPrice = el.DOM.Find(".totalPrice").Find("span").Text()
+			priceInfo.UnitPrice = el.DOM.Find(".unitPrice").Find("span").Text()
+			priceInfo.UnitPrice = strings.ReplaceAll(priceInfo.UnitPrice, "元/平", "")
+			priceInfo.UnitPrice = strings.ReplaceAll(priceInfo.UnitPrice, ",", "")
+			priceInfo.DateStr = time.Now().Format("2006-01-02")
 			houseType, houseArea, houseOrientation, houseYear, houseFloor := util.ParseHouseDetail(el.DOM.Find(".houseInfo").Text())
 			houseItem.HouseType = houseType
 			houseItem.HouseArea = houseArea

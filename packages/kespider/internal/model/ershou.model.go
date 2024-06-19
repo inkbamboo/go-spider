@@ -1,13 +1,12 @@
 package model
 
 import (
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
 
-type ErShou struct {
+type ErShouFang struct {
 	ID               primitive.ObjectID `json:"id" bson:"_id" `
 	CreatedAt        time.Time          `json:"created_at" bson:"created_at"`
 	UpdatedAt        time.Time          `json:"updated_at" bson:"updated_at" `
@@ -18,16 +17,21 @@ type ErShou struct {
 	HouseOrientation string             `json:"house_orientation" bson:"house_orientation"` // 房屋朝向
 	HouseType        string             `json:"house_type" bson:"house_type"`               // 房屋类型
 	HouseYear        string             `json:"house_year" bson:"house_year"`               // 房屋年限
-	TotalPrice       string             `json:"total_price" bson:"total_price"`             // 总价
-	UnitPrice        string             `json:"unit_price" bson:"unit_price"`               // 单价
 	XiaoquName       string             `json:"xiaoqu_name" bson:"xiaoqu_name"`             // 小区名称
 	HouseFloor       string             `json:"house_floor" bson:"house_floor"`             // 楼层总高度
+	PriceInfos       PriceInfos         `json:"price_infos" bson:"price_infos"`             // 价格信息
+}
+type PriceInfos map[string]PriceInfo
+type PriceInfo struct {
+	DateStr    string `json:"date_str"`     // 日期
+	TotalPrice string `json:"total_price""` // 总价
+	UnitPrice  string `json:"unit_price"`   // 单价
 }
 
-func (m *ErShou) TableName() string {
-	return fmt.Sprintf("ershou%s", time.Now().Format("20060102"))
+func (m *ErShouFang) TableName() string {
+	return "ershoufang"
 }
-func (m *ErShou) GetBson() (bson.M, error) {
+func (m *ErShouFang) GetBson() (bson.M, error) {
 	m.CreatedAt = time.Now()
 	m.UpdatedAt = time.Now()
 	m.ID = primitive.NewObjectIDFromTimestamp(time.Now())
