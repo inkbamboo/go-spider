@@ -29,7 +29,7 @@ module.exports = {
     apps: [
         {
             name: "ke-area-spider",
-            cwd: `./dist/kespider_${os}_amd64`,
+            cwd: `./dist/kespider_${os}_amd64_v1`,
             script: "kespider",
             args:`--env ${env} --spider area ke`,
             ...configs,
@@ -37,7 +37,7 @@ module.exports = {
         },
         {
             name: "ke-ershou-spider",
-            cwd: `./dist/kespider_${os}_amd64`,
+            cwd: `./dist/kespider_${os}_amd64_v1`,
             script: "kespider",
             args:`--env ${env} --spider ershou ke`,
             ...configs,
