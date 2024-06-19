@@ -20,7 +20,12 @@ func Commands() []*cli.Command {
 			Description: "Run kespider",
 			Action: func(c *cli.Context) error {
 				scripts.Init(c)
-				scripts.RunAreaSpider()
+				spider := c.String("spider")
+				if spider == "area" {
+					scripts.RunAreaSpider()
+				} else if spider == "ershou" {
+					scripts.RunErShouSpider()
+				}
 				return nil
 			},
 		},

@@ -1,12 +1,14 @@
 package scripts
 
 import (
-	"fmt"
-	"github.com/inkbamboo/ares"
+	"github.com/inkbamboo/go-spider/packages/kespider/internal/spider"
 )
 
 func RunAreaSpider() {
-	ares.NewAres()
-	//spider.GetAreaSpider().Start()
-	fmt.Printf("Area Spider Start...\n", ares)
+	spider.GetAreaSpider().Start()
+	select {}
+}
+func RunErShouSpider() {
+	spider.GetErShouSpider().Start()
+	select {}
 }
