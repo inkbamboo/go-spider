@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
@@ -24,7 +25,7 @@ type ErShou struct {
 }
 
 func (m *ErShou) TableName() string {
-	return "ershou"
+	return fmt.Sprintf("ershou%s", time.Now().Format("20060102"))
 }
 func (m *ErShou) GetBson() (bson.M, error) {
 	m.CreatedAt = time.Now()

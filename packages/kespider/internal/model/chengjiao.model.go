@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
@@ -25,7 +26,7 @@ type ChengJiao struct {
 }
 
 func (m *ChengJiao) TableName() string {
-	return "chengjiao"
+	return fmt.Sprintf("chengjiao%s", time.Now().Format("20060102"))
 }
 func (m *ChengJiao) GetBson() (bson.M, error) {
 	bytes, err := bson.Marshal(m)
