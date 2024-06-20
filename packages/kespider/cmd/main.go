@@ -21,6 +21,7 @@ func Commands() []*cli.Command {
 			Action: func(c *cli.Context) error {
 				fmt.Println("开始运行...")
 				scripts.Init(c)
+				time.Sleep(3 * time.Second)
 				spider := c.String("spider")
 				if spider == "area" {
 					scripts.RunAreaSpider()

@@ -5,12 +5,15 @@ go 1.22
 require (
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/inkbamboo/ares v0.1.7
+	github.com/json-iterator/go v1.1.12
 	github.com/labstack/gommon v0.4.0
-	github.com/robfig/cron/v3 v3.0.1
+	github.com/panjf2000/ants/v2 v2.10.0
 	github.com/samber/lo v1.39.0
+	github.com/spf13/cast v1.6.0
 	github.com/tidwall/gjson v1.17.1
 	github.com/urfave/cli/v2 v2.27.2
 	go.mongodb.org/mongo-driver v1.15.1
+	gorm.io/gorm v1.25.10
 )
 
 require (
@@ -49,6 +52,8 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
+	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
@@ -59,7 +64,6 @@ require (
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
-	github.com/spf13/cast v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.19.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
@@ -86,5 +90,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/mysql v1.5.7 // indirect
 	gorm.io/driver/postgres v1.5.9 // indirect
-	gorm.io/gorm v1.25.10 // indirect
 )

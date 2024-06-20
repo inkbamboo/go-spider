@@ -19,6 +19,3 @@ func RunErShouSpider() {
 	//}
 	select {}
 }
-func RunTest() {
-
-}
