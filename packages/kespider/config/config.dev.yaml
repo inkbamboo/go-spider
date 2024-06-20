@@ -9,3 +9,10 @@ databases:
     password: 123456
     dbName: ke_sjz
     alias: sjz
+  - host: 127.0.0.1
+    dialect: mysql
+    port: 27017
+    username: root
+    password: 123456
+    dbName: ke_sjz
+    alias: sjz

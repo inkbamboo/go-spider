@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/gocolly/colly/v2"
 	"github.com/inkbamboo/ares"
-	"github.com/inkbamboo/go-spider/packages/kespider/internal/model"
+	"github.com/inkbamboo/go-spider/packages/kespider/internal/models"
 	"github.com/inkbamboo/go-spider/packages/kespider/internal/util"
 	"github.com/samber/lo"
 	"github.com/tidwall/gjson"
@@ -29,13 +29,13 @@ func GetErShouSpider() *ErShouSpider {
 	})
 	return erShouSpider
 }
-func (s *ErShouSpider) findAllArea() ([]*model.Area, error) {
+func (s *ErShouSpider) findAllArea() ([]*models.Area, error) {
 	cursor, err := ares.Default().GetMongo("sjz").Collection("area").Find(context.TODO(), bson.D{{}})
 	if err != nil {
 		return nil, err
 	}
 	// Unpacks the cursor into a slice
-	var results []*model.Area
+	var results []*models.Area
 	if err = cursor.All(context.TODO(), &results); err != nil {
 		panic(err)
 	}
@@ -54,7 +54,7 @@ func (s *ErShouSpider) Start() {
 	//	}
 	//}
 }
-func (s *ErShouSpider) parseOnArea(area *model.Area) {
+func (s *ErShouSpider) parseOnArea(area *models.Area) {
 	c := colly.NewCollector()
 	c.OnHTML(".page-box div", func(e *colly.HTMLElement) {
 		totalPage := gjson.Get(e.Attr("page-data"), "totalPage").Int()
@@ -68,7 +68,7 @@ func (s *ErShouSpider) parseOnArea(area *model.Area) {
 	})
 	c.Visit(fmt.Sprintf("https://sjz.ke.com/ershoufang/%s/", area.DistrictId))
 }
-func (s *ErShouSpider) parseHouseList(area *model.Area, page int64) {
+func (s *ErShouSpider) parseHouseList(area *models.Area, page int64) {
 	c := colly.NewCollector()
 	c.OnHTML(".sellListContent", func(e *colly.HTMLElement) {
 		e.ForEach("li", func(_ int, el *colly.HTMLElement) {
@@ -82,21 +82,21 @@ func (s *ErShouSpider) parseHouseList(area *model.Area, page int64) {
 				return
 			}
 			filter := bson.D{{"housedel_id", bson.D{{"$eq", housedelId}}}}
-			houseItem := &model.ErShouFang{}
+			houseItem := &models.ErShouFang{}
 			collection := ares.Default().GetMongo("sjz").Collection(houseItem.TableName())
 			collection.FindOne(context.TODO(), filter).Decode(&houseItem)
 			houseItem.HousedelId = housedelId
 			houseItem.AreaName = area.AreaName
 			houseItem.DistrictName = area.DistrictName
 			houseItem.XiaoquName = el.DOM.Find(".positionInfo").Find("a").Text()
-			priceInfo := model.PriceInfo{}
+			priceInfo := models.PriceInfo{}
 			priceInfo.TotalPrice = el.DOM.Find(".totalPrice").Find("span").Text()
 			priceInfo.UnitPrice = el.DOM.Find(".unitPrice").Find("span").Text()
 			priceInfo.UnitPrice = strings.ReplaceAll(priceInfo.UnitPrice, "元/平", "")
 			priceInfo.UnitPrice = strings.ReplaceAll(priceInfo.UnitPrice, ",", "")
 			priceInfo.DateStr = time.Now().Format("2006-01-02")
 			if houseItem.PriceInfos == nil {
-				houseItem.PriceInfos = map[string]model.PriceInfo{}
+				houseItem.PriceInfos = map[string]models.PriceInfo{}
 			}
 			houseItem.PriceInfos[time.Now().Format("20060102")] = priceInfo
 			houseItem.HouseType, houseItem.HouseArea, houseItem.HouseOrientation, houseItem.HouseYear, houseItem.HouseFloor = util.ParseHouseDetail(el.DOM.Find(".houseInfo").Text())

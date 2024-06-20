@@ -1,13 +1,11 @@
 package spider
 
 import (
-	"context"
 	"fmt"
 	"github.com/gocolly/colly/v2"
 	"github.com/inkbamboo/ares"
-	"github.com/inkbamboo/go-spider/packages/kespider/internal/model"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/inkbamboo/go-spider/packages/kespider/internal/models"
+	"gorm.io/gorm/clause"
 	"strings"
 	"sync"
 )
@@ -28,6 +26,7 @@ func GetAreaSpider() *AreaSpider {
 	return areaSpider
 }
 func (s *AreaSpider) Start() {
+	fmt.Println("Start AreaSpider")
 	c := colly.NewCollector()
 	c.OnXML("//div[3]/div[1]/dl[2]/dd/div/div/a", func(e *colly.XMLElement) {
 		href := e.Attr("href")
@@ -47,20 +46,27 @@ func (s *AreaSpider) parseArea(areaId, areaName string) {
 	c := colly.NewCollector()
 	c.OnXML("//div[3]/div[1]/dl[2]/dd/div/div[2]/a", func(e *colly.XMLElement) {
 		districtId := strings.Split(e.Attr("href"), "/")[2]
+		fmt.Printf("districtId: %s, districtName: %s\n", districtId, e.Text)
 		if districtId == "" {
 			return
 		}
-		areaItem := model.Area{}
-		filter := bson.D{{"district_id", bson.D{{"$eq", districtId}}}}
-		collection := ares.Default().GetMongo("sjz").Collection(areaItem.TableName())
-		collection.FindOne(context.TODO(), filter).Decode(&areaItem)
-		areaItem.AreaId = areaId
-		areaItem.AreaName = areaName
-		areaItem.DistrictId = strings.Split(e.Attr("href"), "/")[2]
-		areaItem.DistrictName = e.Text
-		areaBs, _ := areaItem.ToBson()
-		update := bson.M{"$set": areaBs}
-		_, _ = collection.UpdateOne(context.TODO(), filter, update, &options.UpdateOptions{Upsert: &Upsert})
+		areaItem := models.Area{
+			AreaId:       areaId,
+			AreaName:     areaName,
+			DistrictId:   districtId,
+			DistrictName: e.Text,
+		}
+		tx := ares.Default().GetOrm("sjz")
+		if err := tx.Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "district_id"}},
+			DoUpdates: clause.Assignments(map[string]interface{}{
+				"district_name": areaItem.DistrictName,
+				"area_id":       areaItem.AreaId,
+				"area_name":     areaItem.AreaName,
+			}),
+		}).Create(&areaItem).Error; err != nil {
+			return
+		}
 	})
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL)

@@ -19,6 +19,7 @@ func Commands() []*cli.Command {
 			Usage:       "Run kespider",
 			Description: "Run kespider",
 			Action: func(c *cli.Context) error {
+				fmt.Println("开始运行...")
 				scripts.Init(c)
 				spider := c.String("spider")
 				if spider == "area" {
@@ -26,6 +27,18 @@ func Commands() []*cli.Command {
 				} else if spider == "ershou" {
 					scripts.RunErShouSpider()
 				}
+				return nil
+			},
+		},
+		{
+			Name:        "test",
+			Aliases:     []string{"test"},
+			Usage:       "Run test",
+			Description: "Run test",
+			Action: func(c *cli.Context) error {
+				fmt.Println(color.Bold(color.Green("开始运行...")))
+				scripts.Init(c)
+				scripts.RunTest()
 				return nil
 			},
 		},
