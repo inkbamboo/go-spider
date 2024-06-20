@@ -39,16 +39,16 @@ func (s *ErShouSpider) findAllArea() ([]*model.Area, error) {
 }
 
 func (s *ErShouSpider) Start() {
-	//areas, _ := s.findAllArea()
-	//for _, area := range areas {
-	//	s.parseOnArea(area)
-	//}
 	areas, _ := s.findAllArea()
 	for _, area := range areas {
-		if area.DistrictId == "damacun" {
-			s.parseHouseList(area, 1)
-		}
+		s.parseOnArea(area)
 	}
+	//areas, _ := s.findAllArea()
+	//for _, area := range areas {
+	//	if area.DistrictId == "damacun" {
+	//		s.parseHouseList(area, 1)
+	//	}
+	//}
 }
 func (s *ErShouSpider) parseOnArea(area *model.Area) {
 	c := colly.NewCollector()
