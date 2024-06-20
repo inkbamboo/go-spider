@@ -5,14 +5,11 @@ go 1.22
 require (
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/inkbamboo/ares v0.1.7
-	github.com/json-iterator/go v1.1.12
 	github.com/labstack/gommon v0.4.0
-	github.com/panjf2000/ants/v2 v2.10.0
 	github.com/samber/lo v1.39.0
 	github.com/spf13/cast v1.6.0
 	github.com/tidwall/gjson v1.17.1
 	github.com/urfave/cli/v2 v2.27.2
-	go.mongodb.org/mongo-driver v1.15.1
 	gorm.io/gorm v1.25.10
 )
 
@@ -52,8 +49,6 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
-	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
-	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
@@ -75,6 +70,7 @@ require (
 	github.com/xdg-go/stringprep v1.0.4 // indirect
 	github.com/xrash/smetrics v0.0.0-20240312152122-5f08fbb34913 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
+	go.mongodb.org/mongo-driver v1.15.1 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/crypto v0.24.0 // indirect
