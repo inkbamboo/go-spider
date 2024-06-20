@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/gocolly/colly/v2"
 	"github.com/inkbamboo/ares"
-	"github.com/inkbamboo/go-spider/packages/kespider/internal/models"
+	"github.com/inkbamboo/go-spider/packages/kespider/internal/model"
 	"gorm.io/gorm/clause"
 	"strings"
 	"sync"
@@ -46,11 +46,10 @@ func (s *AreaSpider) parseArea(areaId, areaName string) {
 	c := colly.NewCollector()
 	c.OnXML("//div[3]/div[1]/dl[2]/dd/div/div[2]/a", func(e *colly.XMLElement) {
 		districtId := strings.Split(e.Attr("href"), "/")[2]
-		fmt.Printf("districtId: %s, districtName: %s\n", districtId, e.Text)
 		if districtId == "" {
 			return
 		}
-		areaItem := models.Area{
+		areaItem := model.Area{
 			AreaId:       areaId,
 			AreaName:     areaName,
 			DistrictId:   districtId,
@@ -65,6 +64,7 @@ func (s *AreaSpider) parseArea(areaId, areaName string) {
 				"area_name":     areaItem.AreaName,
 			}),
 		}).Create(&areaItem).Error; err != nil {
+			fmt.Printf("create area error: %v\n", err)
 			return
 		}
 	})

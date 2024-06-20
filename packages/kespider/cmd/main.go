@@ -30,18 +30,6 @@ func Commands() []*cli.Command {
 				return nil
 			},
 		},
-		{
-			Name:        "test",
-			Aliases:     []string{"test"},
-			Usage:       "Run test",
-			Description: "Run test",
-			Action: func(c *cli.Context) error {
-				fmt.Println(color.Bold(color.Green("开始运行...")))
-				scripts.Init(c)
-				scripts.RunTest()
-				return nil
-			},
-		},
 	}
 }
 

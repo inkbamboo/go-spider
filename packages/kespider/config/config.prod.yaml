@@ -11,7 +11,7 @@ databases:
     alias: sjz
   - host: 39.98.66.22
     dialect: mysql
-    port: 27017
+    port: 3306
     username: liuxinlei
     password: songzhu12
     dbName: ke_sjz
