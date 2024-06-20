@@ -43,11 +43,16 @@ func (s *ErShouSpider) findAllArea() ([]*model.Area, error) {
 }
 
 func (s *ErShouSpider) Start() {
+	areas, _ := s.findAllArea()
+	for _, area := range areas {
+		s.parseOnArea(area)
+	}
 	//areas, _ := s.findAllArea()
 	//for _, area := range areas {
-	//	s.parseOnArea(area)
+	//	if area.DistrictId == "damacun" {
+	//		s.parseHouseList(area, 1)
+	//	}
 	//}
-	s.parseHouseList(&model.Area{DistrictId: "damacun"}, 1)
 }
 func (s *ErShouSpider) parseOnArea(area *model.Area) {
 	c := colly.NewCollector()
@@ -71,28 +76,33 @@ func (s *ErShouSpider) parseHouseList(area *model.Area, page int64) {
 			if !strings.HasSuffix(href, ".html") {
 				return
 			}
+			housedelId, _ := lo.Last(strings.Split(href, "/"))
+			housedelId = strings.TrimSuffix(housedelId, ".html")
+			if housedelId == "" {
+				return
+			}
+			filter := bson.D{{"housedel_id", bson.D{{"$eq", housedelId}}}}
 			houseItem := &model.ErShouFang{}
+			collection := ares.Default().GetMongo("sjz").Collection(houseItem.TableName())
+			collection.FindOne(context.TODO(), filter).Decode(&houseItem)
+			houseItem.HousedelId = housedelId
 			houseItem.AreaName = area.AreaName
 			houseItem.DistrictName = area.DistrictName
-			houseItem.HousedelId, _ = lo.Last(strings.Split(href, "/"))
-			houseItem.HousedelId = strings.TrimSuffix(houseItem.HousedelId, ".html")
 			houseItem.XiaoquName = el.DOM.Find(".positionInfo").Find("a").Text()
-			priceInfo := &model.PriceInfo{}
+			priceInfo := model.PriceInfo{}
 			priceInfo.TotalPrice = el.DOM.Find(".totalPrice").Find("span").Text()
 			priceInfo.UnitPrice = el.DOM.Find(".unitPrice").Find("span").Text()
 			priceInfo.UnitPrice = strings.ReplaceAll(priceInfo.UnitPrice, "元/平", "")
 			priceInfo.UnitPrice = strings.ReplaceAll(priceInfo.UnitPrice, ",", "")
 			priceInfo.DateStr = time.Now().Format("2006-01-02")
-			houseType, houseArea, houseOrientation, houseYear, houseFloor := util.ParseHouseDetail(el.DOM.Find(".houseInfo").Text())
-			houseItem.HouseType = houseType
-			houseItem.HouseArea = houseArea
-			houseItem.HouseOrientation = houseOrientation
-			houseItem.HouseYear = houseYear
-			houseItem.HouseFloor = houseFloor
-			filter := bson.D{{"housedel_id", bson.D{{"$eq", houseItem.HousedelId}}}}
-			houseBs, _ := houseItem.GetBson()
+			if houseItem.PriceInfos == nil {
+				houseItem.PriceInfos = map[string]model.PriceInfo{}
+			}
+			houseItem.PriceInfos[time.Now().Format("20060102")] = priceInfo
+			houseItem.HouseType, houseItem.HouseArea, houseItem.HouseOrientation, houseItem.HouseYear, houseItem.HouseFloor = util.ParseHouseDetail(el.DOM.Find(".houseInfo").Text())
+			houseBs, _ := houseItem.ToBson()
 			update := bson.M{"$set": houseBs}
-			ares.Default().GetMongo("sjz").Collection(houseItem.TableName()).UpdateOne(context.TODO(), filter, update, &options.UpdateOptions{Upsert: &Upsert})
+			_, _ = collection.UpdateOne(context.TODO(), filter, update, &options.UpdateOptions{Upsert: &Upsert})
 		})
 	})
 	c.OnRequest(func(r *colly.Request) {

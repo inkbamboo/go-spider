@@ -21,20 +21,16 @@ type ErShouFang struct {
 	HouseFloor       string             `json:"house_floor" bson:"house_floor"`             // 楼层总高度
 	PriceInfos       PriceInfos         `json:"price_infos" bson:"price_infos"`             // 价格信息
 }
-type PriceInfos map[string]PriceInfo
-type PriceInfo struct {
-	DateStr    string `json:"date_str"`     // 日期
-	TotalPrice string `json:"total_price""` // 总价
-	UnitPrice  string `json:"unit_price"`   // 单价
-}
 
 func (m *ErShouFang) TableName() string {
-	return "ershoufang"
+	return "ershou"
 }
-func (m *ErShouFang) GetBson() (bson.M, error) {
+func (m *ErShouFang) ToBson() (bson.M, error) {
 	m.CreatedAt = time.Now()
 	m.UpdatedAt = time.Now()
-	m.ID = primitive.NewObjectIDFromTimestamp(time.Now())
+	if m.ID.IsZero() {
+		m.ID = primitive.NewObjectIDFromTimestamp(time.Now())
+	}
 	bytes, err := bson.Marshal(m)
 	if err != nil {
 		return nil, err
@@ -45,4 +41,11 @@ func (m *ErShouFang) GetBson() (bson.M, error) {
 		return nil, err
 	}
 	return result, nil
+}
+
+type PriceInfos map[string]PriceInfo
+type PriceInfo struct {
+	DateStr    string `json:"date_str" bson:"date_str"`       // 日期
+	TotalPrice string `json:"total_price" bson:"total_price"` // 总价
+	UnitPrice  string `json:"unit_price" bson:"unit_price"`   // 单价
 }

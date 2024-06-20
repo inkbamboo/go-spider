@@ -19,10 +19,12 @@ type Area struct {
 func (m *Area) TableName() string {
 	return "area"
 }
-func (m *Area) GetBson() (bson.M, error) {
+func (m *Area) ToBson() (bson.M, error) {
 	m.CreatedAt = time.Now()
 	m.UpdatedAt = time.Now()
-	m.ID = primitive.NewObjectIDFromTimestamp(time.Now())
+	if m.ID.IsZero() {
+		m.ID = primitive.NewObjectIDFromTimestamp(time.Now())
+	}
 	bytes, err := bson.Marshal(m)
 	if err != nil {
 		return nil, err

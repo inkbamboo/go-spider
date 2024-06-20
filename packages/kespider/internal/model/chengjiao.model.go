@@ -28,7 +28,7 @@ type ChengJiao struct {
 func (m *ChengJiao) TableName() string {
 	return fmt.Sprintf("chengjiao%s", time.Now().Format("20060102"))
 }
-func (m *ChengJiao) GetBson() (bson.M, error) {
+func (m *ChengJiao) ToBson() (bson.M, error) {
 	bytes, err := bson.Marshal(m)
 	if err != nil {
 		return nil, err

@@ -46,15 +46,21 @@ func (s *AreaSpider) Start() {
 func (s *AreaSpider) parseArea(areaId, areaName string) {
 	c := colly.NewCollector()
 	c.OnXML("//div[3]/div[1]/dl[2]/dd/div/div[2]/a", func(e *colly.XMLElement) {
+		districtId := strings.Split(e.Attr("href"), "/")[2]
+		if districtId == "" {
+			return
+		}
 		areaItem := model.Area{}
+		filter := bson.D{{"district_id", bson.D{{"$eq", districtId}}}}
+		collection := ares.Default().GetMongo("sjz").Collection(areaItem.TableName())
+		collection.FindOne(context.TODO(), filter).Decode(&areaItem)
 		areaItem.AreaId = areaId
 		areaItem.AreaName = areaName
 		areaItem.DistrictId = strings.Split(e.Attr("href"), "/")[2]
 		areaItem.DistrictName = e.Text
-		filter := bson.D{{"district_id", bson.D{{"$eq", areaItem.DistrictId}}}}
-		areaBs, _ := areaItem.GetBson()
+		areaBs, _ := areaItem.ToBson()
 		update := bson.M{"$set": areaBs}
-		ares.Default().GetMongo("sjz").Collection(areaItem.TableName()).UpdateOne(context.TODO(), filter, update, &options.UpdateOptions{Upsert: &Upsert})
+		_, _ = collection.UpdateOne(context.TODO(), filter, update, &options.UpdateOptions{Upsert: &Upsert})
 	})
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL)
