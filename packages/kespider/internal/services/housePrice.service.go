@@ -23,8 +23,8 @@ func GetHousePriceService() *HousePriceService {
 type HousePriceService struct {
 }
 
-func (s *HousePriceService) SaveHousePrice(housePrice *model.HousePrice) (err error) {
-	tx := ares.Default().GetOrm("sjz")
+func (s *HousePriceService) SaveHousePrice(housePrice *model.HousePrice, city string) (err error) {
+	tx := ares.Default().GetOrm(city)
 	if err = tx.Clauses(clause.OnConflict{
 		Columns: []clause.Column{{Name: "housedel_id"}, {Name: "version"}},
 		DoUpdates: clause.Assignments(map[string]interface{}{

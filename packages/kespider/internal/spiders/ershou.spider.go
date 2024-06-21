@@ -10,26 +10,21 @@ import (
 	"github.com/samber/lo"
 	"github.com/tidwall/gjson"
 	"strings"
-	"sync"
 	"time"
 )
 
-type ErShouSpider struct{}
+type ErShouSpider struct {
+	city string
+}
 
-var (
-	erShouSpider     *ErShouSpider
-	erShouSpiderOnce sync.Once
-)
-
-func GetErShouSpider() *ErShouSpider {
-	erShouSpiderOnce.Do(func() {
-		erShouSpider = &ErShouSpider{}
-	})
-	return erShouSpider
+func NewErShouSpider(city string) *ErShouSpider {
+	return &ErShouSpider{
+		city: city,
+	}
 }
 
 func (s *ErShouSpider) Start() {
-	areas, _ := services.GetAreaService().FindAllArea()
+	areas, _ := services.GetAreaService().FindAllArea(s.city)
 	for _, area := range areas {
 		s.parseOnArea(area)
 	}
@@ -64,7 +59,7 @@ func (s *ErShouSpider) parseOnArea(area *model.Area) {
 		curPage := gjson.Get(e.Attr("page-data"), "curPage").Int()
 		if curPage < totalPage {
 			c.UserAgent = ""
-			c.Visit(fmt.Sprintf("https://sjz.ke.com/ershoufang/%s/pg%d/", area.DistrictId, curPage+1))
+			c.Visit(fmt.Sprintf("https://%s.ke.com/ershoufang/%s/pg%d/", s.city, area.DistrictId, curPage+1))
 		}
 	})
 	c.OnError(func(r *colly.Response, err error) {
@@ -73,7 +68,7 @@ func (s *ErShouSpider) parseOnArea(area *model.Area) {
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL)
 	})
-	c.Visit(fmt.Sprintf("https://sjz.ke.com/ershoufang/%s/", area.DistrictId))
+	c.Visit(fmt.Sprintf("https://%s.ke.com/ershoufang/%s/", s.city, area.DistrictId))
 }
 func (s *ErShouSpider) parseHouseList(area *model.Area, e *colly.HTMLElement) {
 	e.ForEach("li", func(_ int, el *colly.HTMLElement) {
@@ -104,10 +99,10 @@ func (s *ErShouSpider) parseHouseList(area *model.Area, e *colly.HTMLElement) {
 			TotalPrice: util.GetTotalPrice(strings.TrimSpace(el.DOM.Find(".totalPrice").Find("span").Text())),
 			UnitPrice:  util.GetUnitPrice(el.DOM.Find(".unitPrice").Find("span").Text()),
 		}
-		if err := services.GetHouseService().SaveHouse(houseItem); err != nil {
+		if err := services.GetHouseService().SaveHouse(houseItem, s.city); err != nil {
 			return
 		}
-		if err := services.GetHousePriceService().SaveHousePrice(housePrice); err != nil {
+		if err := services.GetHousePriceService().SaveHousePrice(housePrice, s.city); err != nil {
 			return
 		}
 	})

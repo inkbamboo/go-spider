@@ -23,12 +23,13 @@ func Commands() []*cli.Command {
 				scripts.Init(c)
 				time.Sleep(3 * time.Second)
 				spider := c.String("spider")
+				city := c.String("city")
 				if spider == "area" {
-					scripts.RunAreaSpider()
+					scripts.RunAreaSpider(city)
 				} else if spider == "ershou" {
-					scripts.RunErShouSpider()
+					scripts.RunErShouSpider(city)
 				} else if spider == "chengjiao" {
-					scripts.RunChengJiaoSpider()
+					scripts.RunChengJiaoSpider(city)
 				}
 				return nil
 			},
@@ -60,6 +61,11 @@ func main() {
 			Name:        "spider",
 			DefaultText: "area",
 			Usage:       "指定爬虫名称",
+		},
+		&cli.StringFlag{
+			Name:        "city",
+			DefaultText: "sjz",
+			Usage:       "指定城市",
 		},
 	}
 	app.Version = "1.0.0"

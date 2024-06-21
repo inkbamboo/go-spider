@@ -23,8 +23,8 @@ func GetHouseService() *HouseService {
 type HouseService struct {
 }
 
-func (s *HouseService) SaveHouse(house *model.House) (err error) {
-	tx := ares.Default().GetOrm("sjz")
+func (s *HouseService) SaveHouse(house *model.House, city string) (err error) {
+	tx := ares.Default().GetOrm(city)
 	updateInfo := map[string]interface{}{
 		"district_id":       house.DistrictId,
 		"xiaoqu_name":       house.XiaoquName,

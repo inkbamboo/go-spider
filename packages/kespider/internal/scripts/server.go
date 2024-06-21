@@ -6,21 +6,21 @@ import (
 	"time"
 )
 
-func RunAreaSpider() {
+func RunAreaSpider(city string) {
 	fmt.Println("RunAreaSpider")
-	spiders.GetAreaSpider().Start()
+	spiders.NewAreaSpider(city).Start()
 	time.Sleep(100 * time.Second)
 }
-func RunErShouSpider() {
-	spiders.GetErShouSpider().Start()
+func RunErShouSpider(city string) {
+	spiders.NewErShouSpider(city).Start()
 	//crontab := cron.New(cron.WithSeconds())
 	//if _, err := crontab.AddFunc(fmt.Sprintf("0 3 1-31/5 * * *"), spider.GetErShouSpider().Start); err != nil {
 	//	fmt.Println("GetAreaSpider err: ", err)
 	//}
 	select {}
 }
-func RunChengJiaoSpider() {
-	spiders.GetChengJiaoSpider().Start()
+func RunChengJiaoSpider(city string) {
+	spiders.NewChengJiaoSpider(city).Start()
 	//crontab := cron.New(cron.WithSeconds())
 	//if _, err := crontab.AddFunc(fmt.Sprintf("0 3 1-31/5 * * *"), spider.GetErShouSpider().Start); err != nil {
 	//	fmt.Println("GetAreaSpider err: ", err)
