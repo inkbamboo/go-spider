@@ -3,7 +3,6 @@ package spiders
 import (
 	"fmt"
 	"github.com/gocolly/colly/v2"
-	"github.com/gocolly/colly/v2/debug"
 	"github.com/gocolly/colly/v2/extensions"
 	"github.com/inkbamboo/go-spider/packages/kespider/internal/model"
 	"github.com/inkbamboo/go-spider/packages/kespider/internal/services"
@@ -45,12 +44,12 @@ func (s *ErShouSpider) Start() {
 }
 func (s *ErShouSpider) parseOnArea(area *model.Area) {
 	c := colly.NewCollector(
-		colly.AllowedDomains("www.baidu.com", ".baidu.com"), //白名单域名
-		colly.AllowURLRevisit(),                             //允许对同一 URL 进行多次下载
-		colly.Async(true),                                   //设置为异步请求
-		colly.Debugger(&debug.LogDebugger{}),                // 开启debug
-		colly.MaxDepth(2),                                   //爬取页面深度,最多为两层
-		colly.MaxBodySize(1024*1024),                        //响应正文最大字节数
+		colly.AllowedDomains("sjz.ke.com"), //白名单域名
+		colly.AllowURLRevisit(),            //允许对同一 URL 进行多次下载
+		colly.Async(true),                  //设置为异步请求
+		//colly.Debugger(&debug.LogDebugger{}), // 开启debug
+		colly.MaxDepth(2),              //爬取页面深度,最多为两层
+		colly.MaxBodySize(2*1024*1024), //响应正文最大字节数
 		colly.UserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "),
 		colly.IgnoreRobotsTxt(), //忽略目标机器中的`robots.txt`声明
 	)
