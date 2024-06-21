@@ -25,17 +25,20 @@ type HouseService struct {
 
 func (s *HouseService) SaveHouse(house *model.House) (err error) {
 	tx := ares.Default().GetOrm("sjz")
+	updateInfo := map[string]interface{}{
+		"district_id":       house.DistrictId,
+		"xiaoqu_name":       house.XiaoquName,
+		"house_type":        house.HouseType,
+		"house_area":        house.HouseArea,
+		"house_orientation": house.HouseOrientation,
+		"house_floor":       house.HouseFloor,
+	}
+	if house.HouseYear != "" {
+		updateInfo["house_year"] = house.HouseYear
+	}
 	if err = tx.Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: "housedel_id"}},
-		DoUpdates: clause.Assignments(map[string]interface{}{
-			"district_id":       house.DistrictId,
-			"xiaoqu_name":       house.XiaoquName,
-			"house_type":        house.HouseType,
-			"house_area":        house.HouseArea,
-			"house_orientation": house.HouseOrientation,
-			"house_year":        house.HouseYear,
-			"house_floor":       house.HouseFloor,
-		}),
+		Columns:   []clause.Column{{Name: "housedel_id"}},
+		DoUpdates: clause.Assignments(updateInfo),
 	}).Create(&house).Error; err != nil {
 		fmt.Printf("create house error: %v\n", err)
 		return
