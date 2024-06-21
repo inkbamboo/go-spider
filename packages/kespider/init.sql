@@ -41,3 +41,19 @@ CREATE TABLE `house_price` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_housedel_id_version` (`housedel_id`,`version`)
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '价格信息';
+
+DROP TABLE IF EXISTS `chengjiao`;
+CREATE TABLE `chengjiao` (
+   `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '自增ID',
+   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+   `housedel_id` varchar(255) DEFAULT NULL COMMENT '房屋ID',
+   `district_id` varchar(255) DEFAULT NULL COMMENT '板块ID',
+   `total_price` double NULL DEFAULT NULL COMMENT '总价',
+   `unit_price` double NULL DEFAULT NULL COMMENT '单价',
+   `deal_price` double NULL DEFAULT NULL COMMENT '成交价',
+   `deal_cycle` double NULL DEFAULT NULL COMMENT '成交周期',
+   `deal_date` varchar(255) DEFAULT NULL COMMENT '成交日期',
+   PRIMARY KEY (`id`),
+   UNIQUE KEY `uniq_housedel_id` (`housedel_id`)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '成交信息';

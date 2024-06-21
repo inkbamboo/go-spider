@@ -42,6 +42,14 @@ module.exports = {
             args:`--env ${env} --spider ershou ke`,
             ...configs,
             max_restarts: 10,
+        },
+        {
+            name: "ke-chengjiao-spider",
+            cwd: `./dist/kespider_${os}_amd64_v1`,
+            script: "kespider",
+            args:`--env ${env} --spider chengjiao ke`,
+            ...configs,
+            max_restarts: 10,
         }
     ],
 };

@@ -8,7 +8,6 @@ import (
 	"github.com/inkbamboo/go-spider/packages/kespider/internal/services"
 	"github.com/inkbamboo/go-spider/packages/kespider/internal/util"
 	"github.com/samber/lo"
-	"github.com/spf13/cast"
 	"github.com/tidwall/gjson"
 	"strings"
 	"sync"
@@ -47,11 +46,9 @@ func (s *ErShouSpider) parseOnArea(area *model.Area) {
 		colly.AllowedDomains("sjz.ke.com"), //白名单域名
 		colly.AllowURLRevisit(),            //允许对同一 URL 进行多次下载
 		colly.Async(true),                  //设置为异步请求
-		//colly.Debugger(&debug.LogDebugger{}), // 开启debug
-		colly.MaxDepth(2),              //爬取页面深度,最多为两层
-		colly.MaxBodySize(2*1024*1024), //响应正文最大字节数
-		colly.UserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "),
-		colly.IgnoreRobotsTxt(), //忽略目标机器中的`robots.txt`声明
+		colly.MaxDepth(2),                  //爬取页面深度,最多为两层
+		colly.MaxBodySize(2*1024*1024),     //响应正文最大字节数
+		colly.IgnoreRobotsTxt(),            //忽略目标机器中的`robots.txt`声明
 	)
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*httpbin.*",
@@ -94,18 +91,18 @@ func (s *ErShouSpider) parseHouseList(area *model.Area, e *colly.HTMLElement) {
 			DistrictId: area.DistrictId,
 			XiaoquName: el.DOM.Find(".positionInfo").Find("a").Text(),
 		}
-		houseItem.HouseArea, houseItem.HouseType, houseItem.HouseOrientation, houseItem.HouseYear, houseItem.HouseFloor = util.ParseHouseDetail(el.DOM.Find(".houseInfo").Text())
-
-		totalPrice := strings.TrimSpace(el.DOM.Find(".totalPrice").Find("span").Text())
-		unitPrice := el.DOM.Find(".unitPrice").Find("span").Text()
-		unitPrice = strings.ReplaceAll(unitPrice, "元/平", "")
-		unitPrice = strings.TrimSpace(strings.ReplaceAll(unitPrice, ",", ""))
+		infoStr := util.TrimInfoEmpty(el.DOM.Find(".houseInfo").Text())
+		houseItem.HouseArea = util.GetHouseArea(infoStr)
+		houseItem.HouseType = util.GetHouseType(infoStr)
+		houseItem.HouseFloor = util.GetHouseFloor(infoStr)
+		houseItem.HouseOrientation = util.GetHouseOrientation(infoStr)
+		houseItem.HouseYear = util.GetHouseYear(infoStr)
 		housePrice := &model.HousePrice{
 			HousedelId: housedelId,
 			Version:    time.Now().Format("2006-01-02"),
 			DistrictId: area.DistrictId,
-			TotalPrice: cast.ToFloat64(totalPrice),
-			UnitPrice:  cast.ToFloat64(unitPrice),
+			TotalPrice: util.GetTotalPrice(strings.TrimSpace(el.DOM.Find(".totalPrice").Find("span").Text())),
+			UnitPrice:  util.GetUnitPrice(el.DOM.Find(".unitPrice").Find("span").Text()),
 		}
 		if err := services.GetHouseService().SaveHouse(houseItem); err != nil {
 			return

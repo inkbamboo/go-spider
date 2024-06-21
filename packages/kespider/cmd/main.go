@@ -27,6 +27,8 @@ func Commands() []*cli.Command {
 					scripts.RunAreaSpider()
 				} else if spider == "ershou" {
 					scripts.RunErShouSpider()
+				} else if spider == "chengjiao" {
+					scripts.RunChengJiaoSpider()
 				}
 				return nil
 			},

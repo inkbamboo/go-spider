@@ -19,3 +19,11 @@ func RunErShouSpider() {
 	//}
 	select {}
 }
+func RunChengJiaoSpider() {
+	spiders.GetChengJiaoSpider().Start()
+	//crontab := cron.New(cron.WithSeconds())
+	//if _, err := crontab.AddFunc(fmt.Sprintf("0 3 1-31/5 * * *"), spider.GetErShouSpider().Start); err != nil {
+	//	fmt.Println("GetAreaSpider err: ", err)
+	//}
+	select {}
+}
