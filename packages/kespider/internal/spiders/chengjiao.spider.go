@@ -44,12 +44,12 @@ func (s *ChengJiaoSpider) Start() {
 }
 func (s *ChengJiaoSpider) parseOnArea(area *model.Area) {
 	c := colly.NewCollector(
-		colly.AllowedDomains("sjz.ke.com"), //白名单域名
-		colly.AllowURLRevisit(),            //允许对同一 URL 进行多次下载
-		colly.Async(true),                  //设置为异步请求
-		colly.MaxDepth(2),                  //爬取页面深度,最多为两层
-		colly.MaxBodySize(1024*1024),       //响应正文最大字节数
-		colly.IgnoreRobotsTxt(),            //忽略目标机器中的`robots.txt`声明
+		colly.AllowedDomains(fmt.Sprintf("%s.ke.com", s.city)), //白名单域名
+		colly.AllowURLRevisit(),                                //允许对同一 URL 进行多次下载
+		colly.Async(true),                                      //设置为异步请求
+		colly.MaxDepth(2),                                      //爬取页面深度,最多为两层
+		colly.MaxBodySize(1024*1024),                           //响应正文最大字节数
+		colly.IgnoreRobotsTxt(),                                //忽略目标机器中的`robots.txt`声明
 	)
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*httpbin.*",
