@@ -70,11 +70,10 @@ func (s *ChengJiaoSpider) parseOnArea(area *model.Area) {
 	c.OnHTML(".page-box div", func(e *colly.HTMLElement) {
 		totalPage := gjson.Get(e.Attr("page-data"), "totalPage").Int()
 		curPage := gjson.Get(e.Attr("page-data"), "curPage").Int()
-		fmt.Printf("totalPage: %d curPage: %d\n", totalPage, curPage)
-		//if curPage < totalPage {
-		//	c.UserAgent = ""
-		//	c.Visit(fmt.Sprintf("https://sjz.ke.com/chengjiao/%s/pg%d/", area.DistrictId, curPage+1))
-		//}
+		if curPage < totalPage {
+			c.UserAgent = ""
+			c.Visit(fmt.Sprintf("https://sjz.ke.com/chengjiao/%s/pg%d/", area.DistrictId, curPage+1))
+		}
 	})
 	c.OnError(func(r *colly.Response, err error) {
 		fmt.Println("Request URL:", r.Request.URL, "failed with response:", r, "\nError:", err)
