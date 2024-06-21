@@ -29,17 +29,17 @@ func GetErShouSpider() *ErShouSpider {
 }
 
 func (s *ErShouSpider) Start() {
-	//areas, _ := s.findAllArea()
-	//for _, area := range areas {
-	//	s.parseOnArea(area)
-	//}
 	areas, _ := services.GetAreaService().FindAllArea()
 	for _, area := range areas {
-		if area.DistrictId == "damacun" {
-			fmt.Printf("start parse area: %v\n", area.DistrictId)
-			s.parseOnArea(area)
-		}
+		s.parseOnArea(area)
 	}
+	//areas, _ := services.GetAreaService().FindAllArea()
+	//for _, area := range areas {
+	//	if area.DistrictId == "damacun" {
+	//		fmt.Printf("start parse area: %v\n", area.DistrictId)
+	//		s.parseOnArea(area)
+	//	}
+	//}
 }
 func (s *ErShouSpider) parseOnArea(area *model.Area) {
 	c := colly.NewCollector(

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/extensions"
-	"github.com/inkbamboo/ares"
 	"github.com/inkbamboo/go-spider/packages/kespider/internal/model"
 	"github.com/inkbamboo/go-spider/packages/kespider/internal/services"
 	"github.com/inkbamboo/go-spider/packages/kespider/internal/util"
@@ -28,15 +27,7 @@ func GetChengJiaoSpider() *ChengJiaoSpider {
 	})
 	return chengJiaoSpider
 }
-func (s *ChengJiaoSpider) findAllArea() ([]*model.Area, error) {
-	tx := ares.Default().GetOrm("sjz")
-	var results []*model.Area
 
-	if err := tx.Model(&model.Area{}).Find(&results).Error; err != nil {
-		return nil, err
-	}
-	return results, nil
-}
 func (s *ChengJiaoSpider) setCookie(c *colly.Collector) {
 	//设置请求头
 	c.OnRequest(func(r *colly.Request) {
@@ -44,17 +35,17 @@ func (s *ChengJiaoSpider) setCookie(c *colly.Collector) {
 	})
 }
 func (s *ChengJiaoSpider) Start() {
-	//areas, _ := s.findAllArea()
-	//for _, area := range areas {
-	//	s.parseOnArea(area)
-	//}
-	areas, _ := s.findAllArea()
+	areas, _ := services.GetAreaService().FindAllArea()
 	for _, area := range areas {
-		if area.DistrictId == "damacun" {
-			fmt.Printf("start parse area: %v\n", area.DistrictId)
-			s.parseOnArea(area)
-		}
+		s.parseOnArea(area)
 	}
+	//areas, _ := services.GetAreaService().FindAllArea()
+	//for _, area := range areas {
+	//	if area.DistrictId == "damacun" {
+	//		fmt.Printf("start parse area: %v\n", area.DistrictId)
+	//		s.parseOnArea(area)
+	//	}
+	//}
 }
 func (s *ChengJiaoSpider) parseOnArea(area *model.Area) {
 	c := colly.NewCollector(
