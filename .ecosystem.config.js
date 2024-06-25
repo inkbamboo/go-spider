@@ -47,7 +47,7 @@ module.exports = {
             name: "ke-sjz-chengjiao-spider",
             cwd: `./dist/kespider_${os}_amd64_v1`,
             script: "kespider",
-            args:`--env ${env} --city sjz--spider chengjiao ke`,
+            args:`--env ${env} --city sjz --spider chengjiao ke`,
             ...configs,
             max_restarts: 10,
         }
