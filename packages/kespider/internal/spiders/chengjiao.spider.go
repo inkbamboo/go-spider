@@ -33,6 +33,7 @@ func (s *ChengJiaoSpider) Start() {
 	areas, _ := services.GetAreaService().FindAllArea(s.city)
 	for _, area := range areas {
 		s.parseOnArea(area)
+		time.Sleep(20 * time.Second)
 	}
 	//areas, _ := services.GetAreaService().FindAllArea()
 	//for _, area := range areas {
@@ -53,8 +54,8 @@ func (s *ChengJiaoSpider) parseOnArea(area *model.Area) {
 	)
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*httpbin.*",
-		Parallelism: 2,
-		RandomDelay: 5 * time.Second})
+		Parallelism: 1,
+		RandomDelay: 10 * time.Second})
 	//随机设置User-Agent
 	extensions.RandomUserAgent(c)
 	//设置请求头
