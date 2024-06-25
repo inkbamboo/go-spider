@@ -27,7 +27,7 @@ func (s *ErShouSpider) Start() {
 	areas, _ := services.GetAreaService().FindAllArea(s.city)
 	for _, area := range areas {
 		s.parseOnArea(area)
-		time.Sleep(5 * time.Second)
+		time.Sleep(10 * time.Second)
 	}
 	//areas, _ := services.GetAreaService().FindAllArea()
 	//for _, area := range areas {
