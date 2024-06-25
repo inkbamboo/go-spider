@@ -28,26 +28,26 @@ const configs = {
 module.exports = {
     apps: [
         {
-            name: "ke-area-spider",
+            name: "ke-sjz-area-spider",
             cwd: `./dist/kespider_${os}_amd64_v1`,
             script: "kespider",
-            args:`--env ${env} --spider area ke`,
+            args:`--env ${env} --city sjz --spider area ke`,
             ...configs,
             max_restarts: 10,
         },
         {
-            name: "ke-ershou-spider",
+            name: "ke-sjz-ershou-spider",
             cwd: `./dist/kespider_${os}_amd64_v1`,
             script: "kespider",
-            args:`--env ${env} --spider ershou ke`,
+            args:`--env ${env}  --city sjz --spider ershou ke`,
             ...configs,
             max_restarts: 10,
         },
         {
-            name: "ke-chengjiao-spider",
+            name: "ke-sjz-chengjiao-spider",
             cwd: `./dist/kespider_${os}_amd64_v1`,
             script: "kespider",
-            args:`--env ${env} --spider chengjiao ke`,
+            args:`--env ${env} --city sjz--spider chengjiao ke`,
             ...configs,
             max_restarts: 10,
         }
