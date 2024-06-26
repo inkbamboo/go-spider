@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"github.com/spf13/cast"
 	"regexp"
 	"strings"
@@ -12,7 +13,7 @@ func GetHouseType(houseInfo string) string {
 	return houseType
 }
 func GetHouseArea(houseInfo string) float64 {
-	houseAreaReg, _ := regexp.Compile(`[1-9]\d*(\.\d*)?平米`)
+	houseAreaReg, _ := regexp.Compile(`[1-9]\d*(\.\d*)?平米?`)
 	houseArea := cast.ToFloat64(strings.Replace(houseAreaReg.FindString(houseInfo), "平米", "", -1))
 	return houseArea
 }
@@ -37,8 +38,9 @@ func TrimInfoEmpty(houseInfo string) string {
 	return houseInfo
 }
 func GetTotalPrice(houseInfo string) float64 {
-	houseFloorReg, _ := regexp.Compile(`[1-9]\d*(\.\d*)?万`)
-	housePrice := houseFloorReg.FindString(houseInfo)
+	totalPriceReg, _ := regexp.Compile(`[1-9]\d*(\.\d*)?万?`)
+	housePrice := totalPriceReg.FindString(houseInfo)
+	fmt.Printf("housePrice: %s\n", housePrice)
 	return cast.ToFloat64(strings.Replace(housePrice, "万", "", -1))
 }
 
@@ -48,7 +50,7 @@ func GetUnitPrice(houseInfo string) float64 {
 	return cast.ToFloat64(unitPrice)
 }
 func GetDealCycle(houseInfo string) int64 {
-	houseFloorReg, _ := regexp.Compile(`\d*天`)
+	houseFloorReg, _ := regexp.Compile(`\d*天?`)
 	dealCycle := houseFloorReg.FindString(houseInfo)
 	return cast.ToInt64(strings.Replace(dealCycle, "天", "", -1))
 }

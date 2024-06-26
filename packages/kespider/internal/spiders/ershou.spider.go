@@ -97,7 +97,7 @@ func (s *ErShouSpider) parseHouseList(area *model.Area, e *colly.HTMLElement) {
 			HousedelId: housedelId,
 			Version:    time.Now().Format("2006-01-02"),
 			DistrictId: area.DistrictId,
-			TotalPrice: util.GetTotalPrice(strings.TrimSpace(el.DOM.Find(".totalPrice").Find("span").Text())),
+			TotalPrice: util.GetTotalPrice(strings.TrimSpace(el.DOM.Find(".totalPrice.totalPrice2").Find("span").Text())),
 			UnitPrice:  util.GetUnitPrice(el.DOM.Find(".unitPrice").Find("span").Text()),
 		}
 		if err := services.GetHouseService().SaveHouse(houseItem, s.city); err != nil {
