@@ -37,18 +37,20 @@ func Commands() []*cli.Command {
 				return nil
 			},
 		},
+		{
+			Name:    "test",
+			Aliases: []string{"t"},
+			Usage:   "Run test",
+			Action: func(c *cli.Context) error {
+				scripts.Init(c)
+				scripts.RunTest()
+				return nil
+			},
+		},
 	}
 }
-
-func main() {
-	app := cli.NewApp()
-	app.Name = "kespider"
-	app.Usage = "贝壳网爬虫"
-	app.Authors = []*cli.Author{{
-		Name:  "inkbamboo",
-		Email: "inkbamboo@icloud.com",
-	}}
-	app.Flags = []cli.Flag{
+func Flags() []cli.Flag {
+	return []cli.Flag{
 		&cli.StringFlag{
 			Name:        "conf",
 			Value:       "./config",
@@ -71,10 +73,19 @@ func main() {
 			Usage:       "指定城市",
 		},
 	}
+}
+func main() {
+	app := cli.NewApp()
+	app.Name = "kespider"
+	app.Usage = "贝壳网爬虫"
 	app.Version = "1.0.0"
+	app.Authors = []*cli.Author{{
+		Name:  "inkbamboo",
+		Email: "inkbamboo@icloud.com",
+	}}
 	app.Commands = Commands()
+	app.Flags = Flags()
 	_ = app.Run(os.Args)
-
 	line := "==============================="
 	fmt.Println(fmt.Sprintf("%s%s%s%s",
 		color.White(line),
