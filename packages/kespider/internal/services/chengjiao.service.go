@@ -26,7 +26,7 @@ type ChengJiaoService struct {
 func (s *ChengJiaoService) SaveChengJiao(chengJiao *model.ChengJiao, city string) (err error) {
 	tx := ares.Default().GetOrm(city)
 	if err = tx.Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: "housedel_id"}},
+		Columns: []clause.Column{{Name: "housedel_id"}, {Name: "district_id"}},
 		DoUpdates: clause.Assignments(map[string]interface{}{
 			"district_id": chengJiao.DistrictId,
 			"total_price": chengJiao.TotalPrice,

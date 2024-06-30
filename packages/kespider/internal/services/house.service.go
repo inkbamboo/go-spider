@@ -37,7 +37,7 @@ func (s *HouseService) SaveHouse(house *model.House, city string) (err error) {
 		updateInfo["house_year"] = house.HouseYear
 	}
 	if err = tx.Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "housedel_id"}},
+		Columns:   []clause.Column{{Name: "housedel_id"}, {Name: "district_id"}},
 		DoUpdates: clause.Assignments(updateInfo),
 	}).Create(&house).Error; err != nil {
 		fmt.Printf("create house error: %v\n", err)
