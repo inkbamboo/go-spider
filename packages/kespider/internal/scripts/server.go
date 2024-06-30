@@ -34,19 +34,20 @@ func RunChengJiaoSpider(city string) {
 func RunTest() {
 	fmt.Println("RunTest")
 	tx := ares.Default().GetOrm("sjz")
-	versions := []string{"2024-06-26", "2024-06-20"}
+	version1 := "2024-06-26"
+	version2 := "2024-06-30"
 	var hosePrices []*model.HousePrice
-	_ = tx.Model(&model.HousePrice{}).Where("version in(?)", versions).Find(&hosePrices).Error
+	_ = tx.Model(&model.HousePrice{}).Where("version in(?)", []string{version1, version2}).Find(&hosePrices).Error
 	houseInfos := lo.GroupBy(hosePrices, func(item *model.HousePrice) string {
-		return item.HousedelId
+		return item.HousedelId + item.DistrictId
 	})
 	var sellOutHouse, newHouse, changeHouse string
 	for _, houseInfo := range houseInfos {
 		var oldPrice, newPrice float64
 		for _, item := range houseInfo {
-			if item.Version == "2024-06-20" {
+			if item.Version == version1 {
 				oldPrice = item.TotalPrice
-			} else if item.Version == "2024-06-26" {
+			} else if item.Version == version2 {
 				newPrice = item.TotalPrice
 			}
 		}
