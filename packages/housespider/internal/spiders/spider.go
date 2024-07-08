@@ -11,7 +11,7 @@ type SpiderInterface interface {
 	Start()
 }
 
-func NewInstance(platform, spiderType, city string) (spider SpiderInterface, err error) {
+func NewInstance(platform, city, spiderType string) (spider SpiderInterface, err error) {
 	if platform == consts.Ke.Name() {
 		switch spiderType {
 		case consts.Area.Name():

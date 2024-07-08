@@ -8,4 +8,4 @@ databases:
     username: liuxinlei
     password: songzhu12
     dbName: ke_sjz
-    alias: sjz
+    alias: ke_sjz

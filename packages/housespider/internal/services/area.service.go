@@ -23,8 +23,8 @@ func GetAreaService() *AreaService {
 type AreaService struct {
 }
 
-func (s *AreaService) FindAllArea(city string) ([]*model.Area, error) {
-	tx := ares.Default().GetOrm(city)
+func (s *AreaService) FindAllArea(alias string) ([]*model.Area, error) {
+	tx := ares.Default().GetOrm(alias)
 	var results []*model.Area
 
 	if err := tx.Model(&model.Area{}).Find(&results).Error; err != nil {
@@ -32,8 +32,8 @@ func (s *AreaService) FindAllArea(city string) ([]*model.Area, error) {
 	}
 	return results, nil
 }
-func (s *AreaService) SaveArea(area *model.Area, city string) (err error) {
-	tx := ares.Default().GetOrm(city)
+func (s *AreaService) SaveArea(area *model.Area, alias string) (err error) {
+	tx := ares.Default().GetOrm(alias)
 	if err = tx.Clauses(clause.OnConflict{
 		Columns: []clause.Column{{Name: "district_id"}},
 		DoUpdates: clause.Assignments(map[string]interface{}{

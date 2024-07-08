@@ -9,12 +9,14 @@ import (
 )
 
 type AreaSpider struct {
-	city string
+	city  string
+	alias string
 }
 
 func NewAreaSpider(city string) *AreaSpider {
 	return &AreaSpider{
-		city: city,
+		city:  city,
+		alias: fmt.Sprintf("ke_%s", city),
 	}
 }
 func (s *AreaSpider) Start() {
@@ -47,7 +49,7 @@ func (s *AreaSpider) parseArea(areaId, areaName string) {
 			DistrictId:   districtId,
 			DistrictName: e.Text,
 		}
-		services.GetAreaService().SaveArea(areaItem, s.city)
+		services.GetAreaService().SaveArea(areaItem, s.alias)
 	})
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL)

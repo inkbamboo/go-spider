@@ -9,5 +9,5 @@ databases:
     username: liuxinlei
     password: songzhu12
     dbName: ke_sjz
-    alias: ke
+    alias: ke_sjz
 

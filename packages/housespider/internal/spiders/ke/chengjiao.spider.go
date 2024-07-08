@@ -14,12 +14,14 @@ import (
 )
 
 type ChengJiaoSpider struct {
-	city string
+	city  string
+	alias string
 }
 
 func NewChengJiaoSpider(city string) *ChengJiaoSpider {
 	return &ChengJiaoSpider{
-		city: city,
+		city:  city,
+		alias: fmt.Sprintf("ke_%s", city),
 	}
 }
 
@@ -30,7 +32,7 @@ func (s *ChengJiaoSpider) setCookie(c *colly.Collector) {
 	})
 }
 func (s *ChengJiaoSpider) Start() {
-	areas, _ := services.GetAreaService().FindAllArea(s.city)
+	areas, _ := services.GetAreaService().FindAllArea(s.alias)
 	for _, area := range areas {
 		s.parseOnArea(area)
 		time.Sleep(20 * time.Second)
@@ -111,10 +113,10 @@ func (s *ChengJiaoSpider) parseHouseList(area *model.Area, e *colly.HTMLElement)
 		chengjiao.UnitPrice = util.GetUnitPrice(el.DOM.Find(".unitPrice").Text())
 		chengjiao.DealDate = strings.ReplaceAll(util.TrimInfoEmpty(el.DOM.Find(".dealDate").Text()), ".", "-")
 		chengjiao.DealPrice = util.GetTotalPrice(util.TrimInfoEmpty(el.DOM.Find(".totalPrice").Text()))
-		if err := services.GetHouseService().SaveHouse(houseItem, s.city); err != nil {
+		if err := services.GetHouseService().SaveHouse(houseItem, s.alias); err != nil {
 			return
 		}
-		if err := services.GetChengJiaoService().SaveChengJiao(chengjiao, s.city); err != nil {
+		if err := services.GetChengJiaoService().SaveChengJiao(chengjiao, s.alias); err != nil {
 			return
 		}
 	})
