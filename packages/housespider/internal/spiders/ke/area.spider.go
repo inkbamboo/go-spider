@@ -1,10 +1,10 @@
-package spiders
+package ke
 
 import (
 	"fmt"
 	"github.com/gocolly/colly/v2"
-	"github.com/inkbamboo/go-spider/packages/kespider/internal/model"
-	"github.com/inkbamboo/go-spider/packages/kespider/internal/services"
+	"github.com/inkbamboo/go-spider/packages/housespider/internal/model"
+	"github.com/inkbamboo/go-spider/packages/housespider/internal/services"
 	"strings"
 )
 

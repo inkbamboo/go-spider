@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/inkbamboo/go-spider/packages/kespider/internal/scripts"
+	"github.com/inkbamboo/go-spider/packages/housespider/internal/scripts"
 	"github.com/labstack/gommon/color"
 	"github.com/urfave/cli/v2"
 	"os"
@@ -14,25 +14,27 @@ const DateFullLayout = "2006-01-02 15:04:05"
 func Commands() []*cli.Command {
 	return []*cli.Command{
 		{
-			Name:        "kespider",
-			Aliases:     []string{"ke"},
-			Usage:       "Run kespider",
-			Description: "Run kespider",
+			Name:        "housespider",
+			Aliases:     []string{"hs"},
+			Usage:       "Run housespider",
+			Description: "Run housespider",
 			Action: func(c *cli.Context) error {
 				fmt.Println("开始运行...")
 				scripts.Init(c)
 				time.Sleep(3 * time.Second)
+				platform := c.String("platform")
 				spider := c.String("spider")
 				city := c.String("city")
 				fmt.Println(fmt.Sprintf("%s%s%s%s",
+					color.Bold(color.Green("platform:")), platform,
 					color.Bold(color.Green("spider:")), spider,
 					color.Bold(color.Green("city:")), city))
 				if spider == "area" {
-					scripts.RunAreaSpider(city)
+					scripts.RunAreaSpider(platform, city)
 				} else if spider == "ershou" {
-					scripts.RunErShouSpider(city)
+					scripts.RunErShouSpider(platform, city)
 				} else if spider == "chengjiao" {
-					scripts.RunChengJiaoSpider(city)
+					scripts.RunChengJiaoSpider(platform, city)
 				}
 				return nil
 			},
@@ -63,21 +65,26 @@ func Flags() []cli.Flag {
 			Usage:       "执行环境 (开发环境dev、测试环境test、线上环境prod)",
 		},
 		&cli.StringFlag{
-			Name:        "spider",
-			DefaultText: "area",
-			Usage:       "指定爬虫名称",
+			Name:        "platform",
+			DefaultText: "ke",
+			Usage:       "指定平台",
 		},
 		&cli.StringFlag{
 			Name:        "city",
 			DefaultText: "sjz",
 			Usage:       "指定城市",
 		},
+		&cli.StringFlag{
+			Name:        "spider",
+			DefaultText: "area",
+			Usage:       "指定爬虫名称",
+		},
 	}
 }
 func main() {
 	app := cli.NewApp()
-	app.Name = "kespider"
-	app.Usage = "贝壳网爬虫"
+	app.Name = "housespider"
+	app.Usage = "二手房爬虫"
 	app.Version = "1.0.0"
 	app.Authors = []*cli.Author{{
 		Name:  "inkbamboo",

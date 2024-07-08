@@ -3,7 +3,7 @@ package services
 import (
 	"fmt"
 	"github.com/inkbamboo/ares"
-	"github.com/inkbamboo/go-spider/packages/kespider/internal/model"
+	"github.com/inkbamboo/go-spider/packages/housespider/internal/model"
 	"github.com/samber/lo"
 	"gorm.io/gorm/clause"
 	"strings"
@@ -47,7 +47,7 @@ func (s *HousePriceService) GetChangeHouse(versions []string) string {
 	houseInfos := lo.GroupBy(hosePrices, func(item *model.HousePrice) string {
 		return item.HousedelId + item.DistrictId
 	})
-	changeHouse := fmt.Sprintf("'housedel_id,%s", strings.Join(versions, ","))
+	changeHouse := fmt.Sprintf("housedel_id,%s", strings.Join(versions, ","))
 	changeHouse += fmt.Sprintf("'\n")
 	for _, houseInfo := range houseInfos {
 		housePrice := map[string]float64{}
@@ -69,10 +69,17 @@ func (s *HousePriceService) GetChangeHouse(versions []string) string {
 				isChange = true
 			}
 		}
-		line += fmt.Sprintf("'\n")
+		line += fmt.Sprintf("\n")
 		if isChange {
 			changeHouse += line
 		}
 	}
 	return changeHouse
+}
+func (s *HousePriceService) GetHousePrice(version string) {
+	sql := fmt.Sprintf(`select A.unit_price,A.total_price,A.housedel_id,C.district_name,C.area_name,B.xiaoqu_name from house_price as A ,house as B ,area as C 
+where A.housedel_id=B.housedel_id and A.district_id=B.district_id and A.district_id=C.district_id and A.version="%s"`, version)
+	tx := ares.Default().GetOrm("sjz")
+	var housePrice []*model.XiaoquPrice
+	_ = tx.Raw(sql).Scan(housePrice).Error
 }

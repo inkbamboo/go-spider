@@ -3,7 +3,7 @@ package services
 import (
 	"fmt"
 	"github.com/inkbamboo/ares"
-	"github.com/inkbamboo/go-spider/packages/kespider/internal/model"
+	"github.com/inkbamboo/go-spider/packages/housespider/internal/model"
 	"gorm.io/gorm/clause"
 	"sync"
 )

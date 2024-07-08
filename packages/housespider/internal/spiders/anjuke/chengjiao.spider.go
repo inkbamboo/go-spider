@@ -1,12 +1,12 @@
-package spiders
+package anjuke
 
 import (
 	"fmt"
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/extensions"
-	"github.com/inkbamboo/go-spider/packages/kespider/internal/model"
-	"github.com/inkbamboo/go-spider/packages/kespider/internal/services"
-	"github.com/inkbamboo/go-spider/packages/kespider/internal/util"
+	"github.com/inkbamboo/go-spider/packages/housespider/internal/model"
+	"github.com/inkbamboo/go-spider/packages/housespider/internal/services"
+	"github.com/inkbamboo/go-spider/packages/housespider/internal/util"
 	"github.com/samber/lo"
 	"github.com/tidwall/gjson"
 	"strings"

@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/gocolly/colly/v2 v2.1.0
-	github.com/inkbamboo/ares v0.1.7
+	github.com/inkbamboo/ares v0.1.8
 	github.com/labstack/gommon v0.4.0
 	github.com/samber/lo v1.39.0
 	github.com/spf13/cast v1.6.0

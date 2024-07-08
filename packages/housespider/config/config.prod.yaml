@@ -9,10 +9,3 @@ databases:
     password: songzhu12
     dbName: ke_sjz
     alias: sjz
-  - host: 127.0.0.1
-    dialect: mysql
-    port: 3306
-    username: liuxinlei
-    password: songzhu12
-    dbName: ke_bj
-    alias: bj
