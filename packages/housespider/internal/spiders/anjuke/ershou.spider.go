@@ -14,17 +14,19 @@ import (
 )
 
 type ErShouSpider struct {
-	city string
+	city  string
+	alias string
 }
 
 func NewErShouSpider(city string) *ErShouSpider {
 	return &ErShouSpider{
-		city: city,
+		city:  city,
+		alias: fmt.Sprintf("ke_%s", city),
 	}
 }
 
 func (s *ErShouSpider) Start() {
-	areas, _ := services.GetAreaService().FindAllArea(s.city)
+	areas, _ := services.GetAreaService().FindAllArea(s.alias)
 	for _, area := range areas {
 		s.parseOnArea(area)
 		time.Sleep(10 * time.Second)
@@ -100,10 +102,10 @@ func (s *ErShouSpider) parseHouseList(area *model.Area, e *colly.HTMLElement) {
 			TotalPrice: util.GetTotalPrice(strings.TrimSpace(el.DOM.Find(".totalPrice.totalPrice2").Find("span").Text())),
 			UnitPrice:  util.GetUnitPrice(el.DOM.Find(".unitPrice").Find("span").Text()),
 		}
-		if err := services.GetHouseService().SaveHouse(houseItem, s.city); err != nil {
+		if err := services.GetHouseService().SaveHouse(houseItem, s.alias); err != nil {
 			return
 		}
-		if err := services.GetHousePriceService().SaveHousePrice(housePrice, s.city); err != nil {
+		if err := services.GetHousePriceService().SaveHousePrice(housePrice, s.alias); err != nil {
 			return
 		}
 	})
