@@ -47,8 +47,7 @@ func (s *HousePriceService) GetChangeHouse(versions []string, alias string) stri
 	houseInfos := lo.GroupBy(hosePrices, func(item *model.HousePrice) string {
 		return item.HousedelId + item.DistrictId
 	})
-	changeHouse := fmt.Sprintf("housedel_id,%s", strings.Join(versions, ","))
-	changeHouse += fmt.Sprintf("'\n")
+	changeHouse := fmt.Sprintf("housedel_id,%s\n", strings.Join(versions, ","))
 	for _, houseInfo := range houseInfos {
 		housePrice := map[string]float64{}
 		for _, item := range houseInfo {
