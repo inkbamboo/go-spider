@@ -40,8 +40,8 @@ func (s *HousePriceService) SaveHousePrice(housePrice *model.HousePrice, alias s
 	}
 	return
 }
-func (s *HousePriceService) GetChangeHouse(versions []string) string {
-	tx := ares.Default().GetOrm("sjz")
+func (s *HousePriceService) GetChangeHouse(versions []string, alias string) string {
+	tx := ares.Default().GetOrm(alias)
 	var hosePrices []*model.HousePrice
 	_ = tx.Model(&model.HousePrice{}).Where("version in(?)", versions).Find(&hosePrices).Error
 	houseInfos := lo.GroupBy(hosePrices, func(item *model.HousePrice) string {

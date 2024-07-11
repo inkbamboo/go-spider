@@ -2,18 +2,18 @@ swaggeApi: false
 debug: false
 autoMigrate: true
 databases:
-#  - host: 39.98.66.22
-  - host: 127.0.0.1
+  - host: 39.98.66.22
+#  - host: 127.0.0.1
     dialect: mysql
     port: 3306
     username: liuxinlei
     password: songzhu12
     dbName: ke_sjz
     alias: ke_sjz
-  - host: 127.0.0.1
-    dialect: mysql
-    port: 3306
-    username: liuxinlei
-    password: songzhu12
-    dbName: anjuke_sjz
-    alias: anjuke_sjz
+#  - host: 127.0.0.1
+#    dialect: mysql
+#    port: 3306
+#    username: liuxinlei
+#    password: songzhu12
+#    dbName: anjuke_sjz
+#    alias: anjuke_sjz

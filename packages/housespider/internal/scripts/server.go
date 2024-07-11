@@ -38,8 +38,8 @@ func RunChengJiaoSpider(platform, city string) {
 
 func RunTest() {
 	fmt.Println("RunTest")
-	versions := []string{"2024-06-26", "2024-06-30", "2024-07-03", "2024-07-07"}
-	changeHouse := services.GetHousePriceService().GetChangeHouse(versions)
+	versions := []string{"2024-06-26", "2024-06-30", "2024-07-03", "2024-07-07", "2024-07-10"}
+	changeHouse := services.GetHousePriceService().GetChangeHouse(versions, "ke_sjz")
 	os.WriteFile("./temp/change_house.csv", []byte(changeHouse), 0644)
 	time.Sleep(10 * time.Second)
 	fmt.Println("RunTest End")

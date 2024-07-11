@@ -25,7 +25,7 @@ func Commands() []*cli.Command {
 				platform := c.String("platform")
 				spider := c.String("spider")
 				city := c.String("city")
-				fmt.Println(fmt.Sprintf("%s%s%s%s",
+				fmt.Println(fmt.Sprintf("%s%s%s%s%s%s",
 					color.Bold(color.Green("platform:")), platform,
 					color.Bold(color.Green("spider:")), spider,
 					color.Bold(color.Green("city:")), city))
