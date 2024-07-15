@@ -36,7 +36,7 @@ func (s *ChengJiaoSpider) Start() {
 	areas, _ := services.GetAreaService().FindAllArea(s.alias)
 	for _, area := range areas {
 		s.parseOnArea(area)
-		time.Sleep(20 * time.Second)
+		time.Sleep(10 * time.Second)
 	}
 	//areas, _ := services.GetAreaService().FindAllArea(s.alias)
 	//for _, area := range areas {
