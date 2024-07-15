@@ -9,10 +9,10 @@ before:
     # you may remove this if you don't need go generate
 #    - go generate ./...
 builds:
-  - id : "kespider"
+  - id : "housespider"
     dir: "./packages/housespider/cmd"
     main: "main.go"
-    binary: "kespider"
+    binary: "housespider"
     goos:
       - linux
       - windows
@@ -23,7 +23,7 @@ builds:
       - CGO_ENABLED=0
     hooks:
       post:
-        - cp -rf ./packages/kespider/config {{ dir .Path }}
+        - cp -rf ./packages/housespider/config {{ dir .Path }}
 archives:
   - format: tar.gz
     # this name template makes the OS and Arch compatible with the results of uname.
