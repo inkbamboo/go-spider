@@ -65,7 +65,7 @@ func (s *ChengJiaoSpider) parseOnArea(area *model.Area) {
 	s.setCookie(c)
 	c.OnHTML(".leftContent", func(e *colly.HTMLElement) {
 		dealDate := s.parseHouseList(area, e.DOM.Find(".listContent ").Find("li"))
-		if !dealDate.IsZero() && dealDate.Before(time.Now().Add(-24*30*time.Hour)) {
+		if !dealDate.IsZero() && dealDate.Before(time.Now().Add(-24*60*time.Hour)) {
 			return
 		}
 		pageData, _ := e.DOM.Find(".page-box div").Attr("page-data")
