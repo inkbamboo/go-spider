@@ -7,10 +7,10 @@ before:
     - go mod tidy
     - go mod download
     # you may remove this if you don't need go generate
-    - go generate ./...
+#    - go generate ./...
 builds:
   - id : "kespider"
-    dir: "./packages/kespider/cmd"
+    dir: "./packages/housespider/cmd"
     main: "main.go"
     binary: "kespider"
     goos:
