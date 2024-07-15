@@ -3,6 +3,7 @@ module github.com/inkbamboo/go-spider
 go 1.22
 
 require (
+	github.com/PuerkitoBio/goquery v1.9.2
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/inkbamboo/ares v0.1.8
 	github.com/labstack/gommon v0.4.0
@@ -14,7 +15,6 @@ require (
 )
 
 require (
-	github.com/PuerkitoBio/goquery v1.9.2 // indirect
 	github.com/andybalholm/cascadia v1.3.2 // indirect
 	github.com/antchfx/htmlquery v1.2.3 // indirect
 	github.com/antchfx/xmlquery v1.2.4 // indirect
