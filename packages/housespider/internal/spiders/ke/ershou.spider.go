@@ -2,6 +2,7 @@ package ke
 
 import (
 	"fmt"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/extensions"
 	"github.com/inkbamboo/go-spider/packages/housespider/internal/model"
@@ -31,7 +32,7 @@ func (s *ErShouSpider) Start() {
 		s.parseOnArea(area)
 		time.Sleep(10 * time.Second)
 	}
-	//areas, _ := services.GetAreaService().FindAllArea()
+	//areas, _ := services.GetAreaService().FindAllArea(s.alias)
 	//for _, area := range areas {
 	//	if area.DistrictId == "damacun" {
 	//		fmt.Printf("start parse area: %v\n", area.DistrictId)
@@ -54,12 +55,11 @@ func (s *ErShouSpider) parseOnArea(area *model.Area) {
 		RandomDelay: 10 * time.Second})
 	//随机设置User-Agent
 	extensions.RandomUserAgent(c)
-	c.OnHTML(".sellListContent", func(e *colly.HTMLElement) {
-		s.parseHouseList(area, e)
-	})
-	c.OnHTML(".page-box div", func(e *colly.HTMLElement) {
-		totalPage := gjson.Get(e.Attr("page-data"), "totalPage").Int()
-		curPage := gjson.Get(e.Attr("page-data"), "curPage").Int()
+	c.OnHTML(".leftContent", func(e *colly.HTMLElement) {
+		s.parseHouseList(area, e.DOM.Find(".sellListContent").Find("li"))
+		pageData, _ := e.DOM.Find(".page-box div").Attr("page-data")
+		totalPage := gjson.Get(pageData, "totalPage").Int()
+		curPage := gjson.Get(pageData, "curPage").Int()
 		if curPage < totalPage {
 			c.UserAgent = ""
 			c.Visit(fmt.Sprintf("https://%s.ke.com/ershoufang/%s/pg%d/", s.city, area.DistrictId, curPage+1))
@@ -73,9 +73,9 @@ func (s *ErShouSpider) parseOnArea(area *model.Area) {
 	})
 	c.Visit(fmt.Sprintf("https://%s.ke.com/ershoufang/%s/", s.city, area.DistrictId))
 }
-func (s *ErShouSpider) parseHouseList(area *model.Area, e *colly.HTMLElement) {
-	e.ForEach("li", func(_ int, el *colly.HTMLElement) {
-		href, _ := el.DOM.Find("a").Attr("href")
+func (s *ErShouSpider) parseHouseList(area *model.Area, e *goquery.Selection) {
+	e.Each(func(_ int, el *goquery.Selection) {
+		href, _ := el.Find("a").Attr("href")
 		if !strings.HasSuffix(href, ".html") {
 			return
 		}
@@ -87,9 +87,9 @@ func (s *ErShouSpider) parseHouseList(area *model.Area, e *colly.HTMLElement) {
 		houseItem := &model.House{
 			HousedelId: housedelId,
 			DistrictId: area.DistrictId,
-			XiaoquName: el.DOM.Find(".positionInfo").Find("a").Text(),
+			XiaoquName: el.Find(".positionInfo").Find("a").Text(),
 		}
-		infoStr := util.TrimInfoEmpty(el.DOM.Find(".houseInfo").Text())
+		infoStr := util.TrimInfoEmpty(el.Find(".houseInfo").Text())
 		houseItem.HouseArea = util.GetHouseArea(infoStr)
 		houseItem.HouseType = util.GetHouseType(infoStr)
 		houseItem.HouseFloor = util.GetHouseFloor(infoStr)
@@ -99,8 +99,8 @@ func (s *ErShouSpider) parseHouseList(area *model.Area, e *colly.HTMLElement) {
 			HousedelId: housedelId,
 			Version:    time.Now().Format("2006-01-02"),
 			DistrictId: area.DistrictId,
-			TotalPrice: util.GetTotalPrice(strings.TrimSpace(el.DOM.Find(".totalPrice.totalPrice2").Find("span").Text())),
-			UnitPrice:  util.GetUnitPrice(el.DOM.Find(".unitPrice").Find("span").Text()),
+			TotalPrice: util.GetTotalPrice(strings.TrimSpace(el.Find(".totalPrice.totalPrice2").Find("span").Text())),
+			UnitPrice:  util.GetUnitPrice(el.Find(".unitPrice").Find("span").Text()),
 		}
 		if err := services.GetHouseService().SaveHouse(houseItem, s.alias); err != nil {
 			return

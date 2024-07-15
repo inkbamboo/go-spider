@@ -2,8 +2,8 @@ swaggeApi: false
 debug: false
 autoMigrate: true
 databases:
-  - host: 39.98.66.22
-#  - host: 127.0.0.1
+#  - host: 39.98.66.22
+  - host: 127.0.0.1
     dialect: mysql
     port: 3306
     username: liuxinlei
