@@ -50,7 +50,7 @@ func GetUnitPrice(houseInfo string) float64 {
 	return cast.ToFloat64(unitPrice)
 }
 func GetDealCycle(houseInfo string) int64 {
-	houseFloorReg, _ := regexp.Compile(`\d*天?`)
+	houseFloorReg, _ := regexp.Compile(`\d*天`)
 	dealCycle := houseFloorReg.FindString(houseInfo)
 	return cast.ToInt64(strings.Replace(dealCycle, "天", "", -1))
 }

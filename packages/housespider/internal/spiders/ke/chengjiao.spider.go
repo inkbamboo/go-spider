@@ -110,8 +110,7 @@ func (s *ChengJiaoSpider) parseHouseList(area *model.Area, e *goquery.Selection)
 			HousedelId: housedelId,
 			DistrictId: area.DistrictId,
 		}
-		dealInfo := strings.TrimSpace(el.Find(".dealCycleTxt").Text())
-
+		dealInfo := util.TrimInfoEmpty(el.Find(".dealCycleTxt").Text())
 		chengjiao.TotalPrice = util.GetTotalPrice(dealInfo)
 		chengjiao.DealCycle = util.GetDealCycle(dealInfo)
 		chengjiao.UnitPrice = util.GetUnitPrice(el.Find(".unitPrice").Text())
