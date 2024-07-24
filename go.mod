@@ -3,6 +3,7 @@ module github.com/inkbamboo/go-spider
 go 1.22
 
 require (
+	github.com/EDDYCJY/fake-useragent v0.2.0
 	github.com/PuerkitoBio/goquery v1.9.2
 	github.com/gocolly/colly/v2 v2.1.0
 	github.com/inkbamboo/ares v0.1.8

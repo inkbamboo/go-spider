@@ -2,6 +2,7 @@ package ke
 
 import (
 	"fmt"
+	browser "github.com/EDDYCJY/fake-useragent"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/extensions"
@@ -72,7 +73,7 @@ func (s *ChengJiaoSpider) parseOnArea(area *model.Area) {
 		totalPage := gjson.Get(pageData, "totalPage").Int()
 		curPage := gjson.Get(pageData, "curPage").Int()
 		if curPage < totalPage {
-			c.UserAgent = ""
+			c.UserAgent = browser.Random()
 			c.Visit(fmt.Sprintf("https://%s.ke.com/chengjiao/%s/pg%d/", s.city, area.DistrictId, curPage+1))
 		}
 	})

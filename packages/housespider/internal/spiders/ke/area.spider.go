@@ -2,6 +2,7 @@ package ke
 
 import (
 	"fmt"
+	browser "github.com/EDDYCJY/fake-useragent"
 	"github.com/gocolly/colly/v2"
 	"github.com/inkbamboo/go-spider/packages/housespider/internal/model"
 	"github.com/inkbamboo/go-spider/packages/housespider/internal/services"
@@ -54,5 +55,6 @@ func (s *AreaSpider) parseArea(areaId, areaName string) {
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL)
 	})
+	c.UserAgent = browser.Random()
 	c.Visit(fmt.Sprintf("https://%s.ke.com/ershoufang/%s/", s.city, areaId))
 }
