@@ -1,19 +1,21 @@
 swaggeApi: false
 debug: false
 autoMigrate: true
+caches:
+  - alias: "base"
+    section: ""
+    adapter: "redis"
+    host: "39.98.66.22"
+    #  host: 127.0.0.1
+    port: 6379
+    password: "123456"
+    db: 0
 databases:
-#  - host: 39.98.66.22
-  - host: 127.0.0.1
+  - alias: ke_sjz
+    host: 39.98.66.22
+    #  host: 127.0.0.1
     dialect: mysql
     port: 3306
     username: liuxinlei
     password: songzhu12
     dbName: ke_sjz
-    alias: ke_sjz
-#  - host: 127.0.0.1
-#    dialect: mysql
-#    port: 3306
-#    username: liuxinlei
-#    password: songzhu12
-#    dbName: anjuke_sjz
-#    alias: anjuke_sjz

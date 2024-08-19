@@ -1,11 +1,11 @@
 package scripts
 
 import (
+	"context"
 	"fmt"
+	"github.com/inkbamboo/ares"
 	"github.com/inkbamboo/go-spider/packages/housespider/consts"
-	"github.com/inkbamboo/go-spider/packages/housespider/internal/services"
 	"github.com/inkbamboo/go-spider/packages/housespider/internal/spiders"
-	"os"
 	"time"
 )
 
@@ -38,9 +38,13 @@ func RunChengJiaoSpider(platform, city string) {
 
 func RunTest() {
 	fmt.Println("RunTest")
-	versions := []string{"2024-06-26", "2024-06-30", "2024-07-03", "2024-07-07", "2024-07-10"}
-	changeHouse := services.GetHousePriceService().GetChangeHouse(versions, "ke_sjz")
-	os.WriteFile("./temp/change_house.csv", []byte(changeHouse), 0644)
-	time.Sleep(10 * time.Second)
-	fmt.Println("RunTest End")
+	//versions := []string{"2024-06-30", "2024-07-30"}
+	//changeHouse := services.GetHousePriceService().GetChangeHouse(versions, "ke_sjz")
+	//os.WriteFile("./temp/change_house.csv", []byte(changeHouse), 0644)
+	//time.Sleep(10 * time.Second)
+	//fmt.Println("RunTest End")
+
+	redisClient := ares.Default().GetRedis("base")
+	cookie := redisClient.Get(context.TODO(), "cookie").Val()
+	fmt.Printf("cookie: %s\n", cookie)
 }
