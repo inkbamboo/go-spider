@@ -6,8 +6,8 @@ databases:
     host: 127.0.0.1
     dialect: mysql
     port: 3306
-    username: liuxinlei
-    password: songzhu12
+    username: root
+    password: 123456
     dbName: ke_sjz
 caches:
   - alias: "base"
