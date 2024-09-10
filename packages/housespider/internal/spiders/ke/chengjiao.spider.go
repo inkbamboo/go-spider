@@ -33,23 +33,24 @@ func (s *ChengJiaoSpider) setCookie(c *colly.Collector) {
 	//设置请求头
 	redisClient := ares.Default().GetRedis("base")
 	cookie := redisClient.Get(context.TODO(), "cookie").Val()
+	fmt.Printf("********cookie:%+v\n", cookie)
 	c.OnRequest(func(r *colly.Request) {
 		r.Headers.Set("cookie", cookie)
 	})
 }
 func (s *ChengJiaoSpider) Start() {
-	areas, _ := services.GetAreaService().FindAllArea(s.alias)
-	for _, area := range areas {
-		s.parseOnArea(area)
-		time.Sleep(20 * time.Second)
-	}
 	//areas, _ := services.GetAreaService().FindAllArea(s.alias)
 	//for _, area := range areas {
-	//	if area.DistrictId == "damacun" {
-	//		fmt.Printf("start parse area: %v\n", area.DistrictId)
-	//		s.parseOnArea(area)
-	//	}
+	//	s.parseOnArea(area)
+	//	time.Sleep(20 * time.Second)
 	//}
+	areas, _ := services.GetAreaService().FindAllArea(s.alias)
+	for _, area := range areas {
+		if area.DistrictId == "damacun" {
+			fmt.Printf("start parse area: %v\n", area.DistrictId)
+			s.parseOnArea(area)
+		}
+	}
 }
 func (s *ChengJiaoSpider) parseOnArea(area *model.Area) {
 	c := colly.NewCollector(
