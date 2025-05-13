@@ -28,11 +28,11 @@ func (s *PoetryService) SavePoetry(poetry *model.Poetry, alias string) (err erro
 	if err = tx.Clauses(clause.OnConflict{
 		Columns: []clause.Column{{Name: "poetry_id"}},
 		DoUpdates: clause.Assignments(map[string]interface{}{
-			"title":      poetry.Title,
-			"author":     poetry.Author,
-			"author_id":  poetry.AuthorId,
-			"dynasty":    poetry.Dynasty,
-			"paragraphs": poetry.Paragraphs,
+			"title":       poetry.Title,
+			"author_name": poetry.AuthorName,
+			"author_id":   poetry.AuthorId,
+			"dynasty":     poetry.Dynasty,
+			"paragraphs":  poetry.Paragraphs,
 		}),
 	}).Create(&poetry).Error; err != nil {
 		fmt.Printf("create poetry error: %v\n", err)

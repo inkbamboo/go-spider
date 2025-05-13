@@ -14,7 +14,6 @@ func NewInstance(platform, spiderType string) (spider SpiderInterface, err error
 	if platform == consts.ZHSC.Name() {
 		switch spiderType {
 		case consts.Author.Name():
-
 		case consts.Poetry.Name():
 			spider = zhsc.NewPoetrySpider()
 		}

@@ -9,7 +9,6 @@ import (
 	"github.com/inkbamboo/go-spider/packages/poetryspider/consts"
 	"github.com/inkbamboo/go-spider/packages/poetryspider/internal/model"
 	"github.com/inkbamboo/go-spider/packages/poetryspider/internal/services"
-	"github.com/inkbamboo/go-spider/packages/poetryspider/internal/util"
 	"github.com/spf13/cast"
 	"strings"
 	"time"
@@ -24,14 +23,14 @@ func NewPoetrySpider() *PoetrySpider {
 
 func (s *PoetrySpider) Start() {
 	//https://zhsc.org/shi/page-2.htm
-	s.parsePoetry(consts.Shi.Name())
-	//s.parsePoetry(consts.Ci.Name())
-	//s.parsePoetry(consts.Qu.Name())
-	//s.parsePoetry(consts.Fu.Name())
-	//s.parsePoetry(consts.Wen.Name())
+	s.startPoetry(consts.Shi.Name())
+	//s.startPoetry(consts.Ci.Name())
+	//s.startPoetry(consts.Qu.Name())
+	//s.startPoetry(consts.Fu.Name())
+	//s.startPoetry(consts.Wen.Name())
 
 }
-func (s *PoetrySpider) parsePoetry(poetryType string) {
+func (s *PoetrySpider) startPoetry(poetryType string) {
 	c := colly.NewCollector(
 		colly.AllowedDomains("zhsc.org"), //白名单域名
 		colly.AllowURLRevisit(),          //允许对同一 URL 进行多次下载
@@ -64,47 +63,62 @@ func (s *PoetrySpider) parsePoetry(poetryType string) {
 			c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-%d.htm", poetryType, curPage+1))
 		}
 	})
-
-	c.OnHTML(".work", func(e *colly.HTMLElement) {
-		poetry := &model.Poetry{}
-		poetry.Title = strings.TrimSpace(e.DOM.Find(".item-hd").Text())
-		poetry.Dynasty = strings.TrimSpace(e.DOM.Find(".item-dynasty-author").Find("a").First().Text())
-		poetry.Author = strings.TrimSpace(e.DOM.Find(".item-dynasty-author").Find("a").Last().Text())
-		poetry.Paragraphs = strings.TrimSpace(e.DOM.Find(".item-desc.work-content").Text())
-		authorId, _ := e.DOM.Find(".item-dynasty-author").Find("a").Last().Attr("href")
-		poetry.AuthorId = strings.TrimSuffix(strings.TrimPrefix(strings.TrimSpace(authorId), "/author/author-"), ".htm")
-		switch poetryType {
-		case consts.Shi.Name():
-			poetry.PoetryType = consts.Shi.Description()
-		case consts.Ci.Name():
-			poetry.PoetryType = consts.Ci.Description()
-		case consts.Qu.Name():
-			poetry.PoetryType = consts.Qu.Description()
-		case consts.Wen.Name():
-			poetry.PoetryType = consts.Wen.Description()
-		case consts.Fu.Name():
-			poetry.PoetryType = consts.Fu.Description()
+	c.OnResponse(func(r *colly.Response) {
+		// 获取当前访问的 URL
+		urlStr := r.Request.URL.Path
+		if !strings.HasPrefix(urlStr, "/work/work-") {
+			return
 		}
-		poetry.PoetryId = util.GetMd5(poetry.Paragraphs)
-		interpret := &model.Interpret{}
-		interpret.PoetryId = poetry.PoetryId
-		interpret.Intro = strings.TrimSpace(e.DOM.Find("#intro").Text())
-		interpret.Annotation = strings.TrimSpace(e.DOM.Find("#annotation").Text())
-		interpret.Translation = strings.TrimSpace(e.DOM.Find("#translation").Text())
-
-		author := &model.Author{}
-		author.AuthorId = poetry.AuthorId
-		author.Name = poetry.Author
-		author.Dynasty = poetry.Dynasty
-		_ = services.GetPoetryService().SavePoetry(poetry, "zhsc_poetry")
-		_ = services.GetInterpretService().SaveInterpret(interpret, "zhsc_poetry")
-		_ = services.GetAuthorService().SaveAuthor(author, "zhsc_poetry")
+		poetryId := strings.TrimSuffix(strings.TrimPrefix(urlStr, "/work/work-"), ".htm")
+		// 创建文档
+		doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(r.Body)))
+		if err != nil {
+			fmt.Printf("创建文档失败: %v\n", err)
+			return
+		}
+		s.parsePoetry(poetryId, poetryType, doc.Find(".work"))
 	})
+
 	c.OnError(func(r *colly.Response, err error) {
 		fmt.Println("Request URL:", r.Request.URL, "failed with response:", r, "\nError:", err)
 	})
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL)
 	})
-	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-150.htm", poetryType))
+	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-120.htm", poetryType))
+}
+func (s *PoetrySpider) parsePoetry(poetryId, poetryType string, e *goquery.Selection) {
+	poetry := &model.Poetry{}
+	poetry.Title = strings.TrimSpace(e.Find(".item-hd").Text())
+	poetry.Dynasty = strings.TrimSpace(e.Find(".item-dynasty-author").Find("a").First().Text())
+	poetry.AuthorName = strings.TrimSpace(e.Find(".item-dynasty-author").Find("a").Last().Text())
+	poetry.Paragraphs = strings.TrimSpace(e.Find(".item-desc.work-content").Text())
+	authorId, _ := e.Find(".item-dynasty-author").Find("a").Last().Attr("href")
+	poetry.AuthorId = strings.TrimSuffix(strings.TrimPrefix(strings.TrimSpace(authorId), "/author/author-"), ".htm")
+	switch poetryType {
+	case consts.Shi.Name():
+		poetry.PoetryType = consts.Shi.Description()
+	case consts.Ci.Name():
+		poetry.PoetryType = consts.Ci.Description()
+	case consts.Qu.Name():
+		poetry.PoetryType = consts.Qu.Description()
+	case consts.Wen.Name():
+		poetry.PoetryType = consts.Wen.Description()
+	case consts.Fu.Name():
+		poetry.PoetryType = consts.Fu.Description()
+	}
+	poetry.PoetryId = poetryId
+	interpret := &model.Interpret{}
+	interpret.PoetryId = poetry.PoetryId
+	interpret.Intro = strings.TrimSpace(e.Find("#intro").Text())
+	interpret.Annotation = strings.TrimSpace(e.Find("#annotation").Text())
+	interpret.Translation = strings.TrimSpace(e.Find("#translation").Text())
+
+	author := &model.Author{}
+	author.AuthorId = poetry.AuthorId
+	author.AuthorName = poetry.AuthorName
+	author.Dynasty = poetry.Dynasty
+	_ = services.GetPoetryService().SavePoetry(poetry, "zhsc_poetry")
+	_ = services.GetInterpretService().SaveInterpret(interpret, "zhsc_poetry")
+	_ = services.GetAuthorService().SaveAuthor(author, "zhsc_poetry")
 }

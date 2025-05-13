@@ -28,7 +28,7 @@ func (s *AuthorService) SaveAuthor(author *model.Author, alias string) (err erro
 	if err = tx.Clauses(clause.OnConflict{
 		Columns: []clause.Column{{Name: "author_id"}},
 		DoUpdates: clause.Assignments(map[string]interface{}{
-			"name":        author.Name,
+			"author_name": author.AuthorName,
 			"intro":       author.Intro,
 			"dynasty":     author.Dynasty,
 			"birth_death": author.BirthDeath,

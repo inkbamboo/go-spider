@@ -42,7 +42,7 @@ func (s *AuthorSpider) parseAuthor(poetryType string) {
 	})
 	authors, _ := services.GetAuthorService().GetAllAuthor("zhsc_poetry")
 	for _, item := range authors {
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(50 * time.Millisecond)
 		c.Visit(fmt.Sprintf("https://zhsc.org/author/author-%s.htm", item.AuthorId))
 
 	}

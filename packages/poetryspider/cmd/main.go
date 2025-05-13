@@ -23,9 +23,10 @@ func Commands() []*cli.Command {
 				scripts.Init(c)
 				time.Sleep(3 * time.Second)
 				platform := c.String("platform")
+				spider := c.String("spider")
 				fmt.Println(fmt.Sprintf("%s%s%s%s%s%s",
 					color.Bold(color.Green("platform:")), platform))
-				scripts.RunPoetrySpider(platform)
+				scripts.RunPoetrySpider(platform, spider)
 				return nil
 			},
 		},
@@ -56,8 +57,13 @@ func Flags() []cli.Flag {
 		},
 		&cli.StringFlag{
 			Name:        "platform",
-			DefaultText: "ke",
+			DefaultText: "zhsc",
 			Usage:       "指定平台",
+		},
+		&cli.StringFlag{
+			Name:        "spider",
+			DefaultText: "peotry",
+			Usage:       "指定爬虫",
 		},
 	}
 }
