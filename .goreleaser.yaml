@@ -24,6 +24,21 @@ builds:
     hooks:
       post:
         - cp -rf ./packages/housespider/config {{ dir .Path }}
+  - id : "poetryspider"
+    dir: "./packages/poetryspider/cmd"
+    main: "main.go"
+    binary: "poetryspider"
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+    env:
+      - CGO_ENABLED=0
+    hooks:
+      post:
+        - cp -rf ./packages/poetryspider/config {{ dir .Path }}
 archives:
   - format: tar.gz
     # this name template makes the OS and Arch compatible with the results of uname.

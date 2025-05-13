@@ -8,7 +8,8 @@
     "build": "goreleaser build --snapshot --clean",
     "pm2:start:ke:sjz:area:spider:prod": "goreleaser build --snapshot --clean --id kespider && OS=linux ENV=prod pm2 startOrRestart ./.ecosystem.config.js --only ke-sjz-area-spider",
     "pm2:start:ke:sjz:ershou:spider:prod": "goreleaser build --snapshot --clean --id kespider && OS=linux ENV=prod pm2 startOrRestart ./.ecosystem.config.js --only ke-sjz-ershou-spider",
-    "pm2:start:ke:sjz:chengjiao:spider:prod": "goreleaser build --snapshot --clean --id kespider && OS=linux ENV=prod pm2 startOrRestart ./.ecosystem.config.js --only ke-sjz-chengjiao-spider"
+    "pm2:start:ke:sjz:chengjiao:spider:prod": "goreleaser build --snapshot --clean --id kespider && OS=linux ENV=prod pm2 startOrRestart ./.ecosystem.config.js --only ke-sjz-chengjiao-spider",
+    "pm2:start:zhsc:poetry:spider:prod": "goreleaser build --snapshot --clean --id poetryspider && OS=linux ENV=prod pm2 startOrRestart ./.ecosystem.config.js --only zhsc-poetry-spider"
   },
   "config": {
     "commitizen": {

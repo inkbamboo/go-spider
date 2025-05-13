@@ -50,6 +50,14 @@ module.exports = {
             args:`--env ${env} --platform ke --city sjz --spider chengjiao hs`,
             ...configs,
             max_restarts: 10,
+        },
+        {
+            name: "zhsc-poetry-spider",
+            cwd: `./dist/poetryspider_${os}_amd64_v1`,
+            script: "housespider",
+            args:`--env ${env} --platform zhsc ps`,
+            ...configs,
+            max_restarts: 10,
         }
     ],
 };

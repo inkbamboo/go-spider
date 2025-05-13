@@ -14,10 +14,10 @@ const DateFullLayout = "2006-01-02 15:04:05"
 func Commands() []*cli.Command {
 	return []*cli.Command{
 		{
-			Name:        "housespider",
-			Aliases:     []string{"hs"},
-			Usage:       "Run housespider",
-			Description: "Run housespider",
+			Name:        "poetryspider",
+			Aliases:     []string{"ps"},
+			Usage:       "Run poetryspider",
+			Description: "Run poetryspider",
 			Action: func(c *cli.Context) error {
 				fmt.Println("开始运行...")
 				scripts.Init(c)
