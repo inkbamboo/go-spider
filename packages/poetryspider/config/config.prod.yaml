@@ -1,0 +1,19 @@
+swaggeApi: false
+debug: false
+autoMigrate: true
+databases:
+  - alias: zhsc_poetry
+    host: 127.0.0.1
+    dialect: mysql
+    port: 3306
+    username: root
+    password: 123456
+    dbName: ke_sjz
+caches:
+  - alias: "base"
+    adapter: "redis"
+    section: ""
+    host: 127.0.0.1
+    port: 6379
+    password: "123456"
+    db: 0

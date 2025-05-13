@@ -33,24 +33,23 @@ func (s *ChengJiaoSpider) setCookie(c *colly.Collector) {
 	//设置请求头
 	redisClient := ares.Default().GetRedis("base")
 	cookie := redisClient.Get(context.TODO(), "cookie").Val()
-	fmt.Printf("********cookie:%+v\n", cookie)
 	c.OnRequest(func(r *colly.Request) {
 		r.Headers.Set("cookie", cookie)
 	})
 }
 func (s *ChengJiaoSpider) Start() {
-	//areas, _ := services.GetAreaService().FindAllArea(s.alias)
-	//for _, area := range areas {
-	//	s.parseOnArea(area)
-	//	time.Sleep(20 * time.Second)
-	//}
 	areas, _ := services.GetAreaService().FindAllArea(s.alias)
 	for _, area := range areas {
-		if area.DistrictId == "damacun" {
-			fmt.Printf("start parse area: %v\n", area.DistrictId)
-			s.parseOnArea(area)
-		}
+		s.parseOnArea(area)
+		time.Sleep(30 * time.Second)
 	}
+	//areas, _ := services.GetAreaService().FindAllArea(s.alias)
+	//for _, area := range areas {
+	//	if area.DistrictId == "damacun" {
+	//		fmt.Printf("start parse area: %v\n", area.DistrictId)
+	//		s.parseOnArea(area)
+	//	}
+	//}
 }
 func (s *ChengJiaoSpider) parseOnArea(area *model.Area) {
 	c := colly.NewCollector(
@@ -71,13 +70,14 @@ func (s *ChengJiaoSpider) parseOnArea(area *model.Area) {
 	s.setCookie(c)
 	c.OnHTML(".leftContent", func(e *colly.HTMLElement) {
 		dealDate := s.parseHouseList(area, e.DOM.Find(".listContent ").Find("li"))
-		if !dealDate.IsZero() && dealDate.Before(time.Now().Add(-24*60*time.Hour)) {
+		if !dealDate.IsZero() && dealDate.Before(time.Now().Add(-250*24*60*time.Hour)) {
 			return
 		}
 		pageData, _ := e.DOM.Find(".page-box div").Attr("page-data")
 		totalPage := gjson.Get(pageData, "totalPage").Int()
 		curPage := gjson.Get(pageData, "curPage").Int()
 		if curPage < totalPage {
+			time.Sleep(2 * time.Second)
 			c.UserAgent = browser.Random()
 			c.Visit(fmt.Sprintf("https://%s.ke.com/chengjiao/%s/pg%d/", s.city, area.DistrictId, curPage+1))
 		}
