@@ -7,6 +7,7 @@ CREATE TABLE `poetry` (
     `title` varchar(255) DEFAULT NULL COMMENT '名称',
     `author` varchar(100) DEFAULT NULL COMMENT '作者',
     `dynasty` varchar(100) DEFAULT NULL COMMENT '朝代',
+    `poetry_type` varchar(255) DEFAULT NULL COMMENT '类型',
     `paragraphs` text DEFAULT NULL COMMENT '主题',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uniq_poetry_id` (`poetry_id`),
@@ -21,8 +22,8 @@ CREATE TABLE `interpret` (
     `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     `poetry_id` varchar(255) DEFAULT NULL COMMENT '诗文ID',
     `translation` text DEFAULT NULL COMMENT '译文',
-    `explanatory_note` text DEFAULT NULL COMMENT '注释',
-    `evaluate` text DEFAULT NULL COMMENT '评价',
+    `annotation` text DEFAULT NULL COMMENT '注释',
+    `intro` text DEFAULT NULL COMMENT '评价',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uniq_poetry_id` (`poetry_id`),
     KEY `idx_poetry_id` (`poetry_id`)

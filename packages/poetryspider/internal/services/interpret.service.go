@@ -28,9 +28,9 @@ func (s *InterpretService) SaveInterpret(interpret *model.Interpret, alias strin
 	if err = tx.Clauses(clause.OnConflict{
 		Columns: []clause.Column{{Name: "poetry_id"}},
 		DoUpdates: clause.Assignments(map[string]interface{}{
-			"translation":      interpret.Translation,
-			"evaluate":         interpret.Evaluate,
-			"explanatory_note": interpret.ExplanatoryNote,
+			"translation": interpret.Translation,
+			"intro":       interpret.Intro,
+			"annotation":  interpret.Annotation,
 		}),
 	}).Create(&interpret).Error; err != nil {
 		fmt.Printf("create interpret error: %v\n", err)

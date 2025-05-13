@@ -3,9 +3,15 @@ package zhsc
 import (
 	"fmt"
 	browser "github.com/EDDYCJY/fake-useragent"
+	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/extensions"
-	"github.com/tidwall/gjson"
+	"github.com/inkbamboo/go-spider/packages/poetryspider/consts"
+	"github.com/inkbamboo/go-spider/packages/poetryspider/internal/model"
+	"github.com/inkbamboo/go-spider/packages/poetryspider/internal/services"
+	"github.com/inkbamboo/go-spider/packages/poetryspider/internal/util"
+	"github.com/spf13/cast"
+	"strings"
 	"time"
 )
 
@@ -17,15 +23,13 @@ func NewPoetrySpider() *PoetrySpider {
 }
 
 func (s *PoetrySpider) Start() {
-	type SpiderTypeEnum struct {
-		Shi string `enum:"shi,诗"`
-		Ci  string `enum:"ci,词"`
-		Wen string `enum:"wen,文"`
-		Qu  string `enum:"qu,曲"`
-		Fu  string `enum:"fu,赋"`
-	}
 	//https://zhsc.org/shi/page-2.htm
-	s.parsePoetry("shi")
+	s.parsePoetry(consts.Shi.Name())
+	s.parsePoetry(consts.Ci.Name())
+	s.parsePoetry(consts.Qu.Name())
+	s.parsePoetry(consts.Fu.Name())
+	s.parsePoetry(consts.Wen.Name())
+
 }
 func (s *PoetrySpider) parsePoetry(poetryType string) {
 	c := colly.NewCollector(
@@ -42,15 +46,50 @@ func (s *PoetrySpider) parsePoetry(poetryType string) {
 		RandomDelay: 10 * time.Second})
 	//随机设置User-Agent
 	extensions.RandomUserAgent(c)
-	c.OnHTML("bdy", func(e *colly.HTMLElement) {
-		//s.parseHouseList(area, e.DOM.Find(".sellListContent").Find("li"))
-		pageData, _ := e.DOM.Find(".pagination").Attr("list")
-		totalPage := gjson.Get(pageData, "totalPage").Int()
-		curPage := gjson.Get(pageData, "curPage").Int()
+	c.OnHTML(".pagination", func(e *colly.HTMLElement) {
+		curPage := cast.ToInt64(strings.TrimSpace(e.DOM.Find(".active").Find("span").Text()))
+		totalPage := cast.ToInt64(strings.TrimSpace(e.DOM.Find("li").Find("a").Last().Text()))
 		if curPage < totalPage {
 			c.UserAgent = browser.Random()
-			//c.Visit(fmt.Sprintf("https://%s.ke.com/ershoufang/%s/pg%d/", s.city, area.DistrictId, curPage+1))
+			c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-%d.htm", poetryType, curPage+1))
+			time.Sleep(10 * time.Second)
 		}
+	})
+	c.OnHTML(".item-list", func(e *colly.HTMLElement) {
+		e.DOM.Find(".item-btn").Each(func(i int, selection *goquery.Selection) {
+			a, _ := selection.Attr("href")
+			if a == "" {
+				return
+			}
+			c.Visit(fmt.Sprintf("https://zhsc.org%s", a))
+		})
+	})
+	c.OnHTML(".work", func(e *colly.HTMLElement) {
+		poetry := &model.Poetry{}
+		poetry.Title = strings.TrimSpace(e.DOM.Find(".item-hd").Text())
+		poetry.Dynasty = strings.TrimSpace(e.DOM.Find(".item-dynasty-author").Find("a").First().Text())
+		poetry.Author = strings.TrimSpace(e.DOM.Find(".item-dynasty-author").Find("a").Last().Text())
+		poetry.Paragraphs = strings.TrimSpace(e.DOM.Find(".item-desc.work-content").Text())
+		switch poetryType {
+		case consts.Shi.Name():
+			poetry.PoetryType = consts.Shi.Description()
+		case consts.Ci.Name():
+			poetry.PoetryType = consts.Ci.Description()
+		case consts.Qu.Name():
+			poetry.PoetryType = consts.Qu.Description()
+		case consts.Wen.Name():
+			poetry.PoetryType = consts.Wen.Description()
+		case consts.Fu.Name():
+			poetry.PoetryType = consts.Fu.Description()
+		}
+		poetry.PoetryId = util.GetMd5(poetry.Paragraphs)
+		interpret := &model.Interpret{}
+		interpret.PoetryId = poetry.PoetryId
+		interpret.Intro = strings.TrimSpace(e.DOM.Find("#intro").Text())
+		interpret.Annotation = strings.TrimSpace(e.DOM.Find("#annotation").Text())
+		interpret.Translation = strings.TrimSpace(e.DOM.Find("#translation").Text())
+		_ = services.GetPoetryService().SavePoetry(poetry, "zhsc_poetry")
+		_ = services.GetInterpretService().SaveInterpret(interpret, "zhsc_poetry")
 	})
 	c.OnError(func(r *colly.Response, err error) {
 		fmt.Println("Request URL:", r.Request.URL, "failed with response:", r, "\nError:", err)
