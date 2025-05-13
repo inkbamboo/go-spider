@@ -30,6 +30,7 @@ func (s *PoetryService) SavePoetry(poetry *model.Poetry, alias string) (err erro
 		DoUpdates: clause.Assignments(map[string]interface{}{
 			"title":      poetry.Title,
 			"author":     poetry.Author,
+			"author_id":  poetry.AuthorId,
 			"dynasty":    poetry.Dynasty,
 			"paragraphs": poetry.Paragraphs,
 		}),

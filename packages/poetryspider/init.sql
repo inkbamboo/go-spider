@@ -28,3 +28,22 @@ CREATE TABLE `interpret` (
     UNIQUE KEY `uniq_poetry_id` (`poetry_id`),
     KEY `idx_poetry_id` (`poetry_id`)
 ) AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 ROW_FORMAT = DYNAMIC COMMENT = '诗词表';
+
+
+
+DROP TABLE IF EXISTS `author`;
+CREATE TABLE `author` (
+    `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT '自增唯一ID',
+    `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+    `author_id` varchar(255) DEFAULT NULL COMMENT '作者ID',
+    `name` varchar(255) DEFAULT NULL COMMENT '名称',
+    `dynasty` varchar(100) DEFAULT NULL COMMENT '朝代',
+    `birth_death` varchar(100) DEFAULT NULL COMMENT '生卒',
+    `intro` text DEFAULT NULL COMMENT '简介',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uniq_author_id` (`author_id`),
+    KEY `idx_name` (`name`)
+) AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 ROW_FORMAT = DYNAMIC COMMENT = '作者表';
+
+

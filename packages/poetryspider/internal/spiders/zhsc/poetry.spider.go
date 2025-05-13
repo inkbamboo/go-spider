@@ -25,10 +25,10 @@ func NewPoetrySpider() *PoetrySpider {
 func (s *PoetrySpider) Start() {
 	//https://zhsc.org/shi/page-2.htm
 	s.parsePoetry(consts.Shi.Name())
-	s.parsePoetry(consts.Ci.Name())
-	s.parsePoetry(consts.Qu.Name())
-	s.parsePoetry(consts.Fu.Name())
-	s.parsePoetry(consts.Wen.Name())
+	//s.parsePoetry(consts.Ci.Name())
+	//s.parsePoetry(consts.Qu.Name())
+	//s.parsePoetry(consts.Fu.Name())
+	//s.parsePoetry(consts.Wen.Name())
 
 }
 func (s *PoetrySpider) parsePoetry(poetryType string) {
@@ -46,30 +46,33 @@ func (s *PoetrySpider) parsePoetry(poetryType string) {
 		RandomDelay: 10 * time.Second})
 	//随机设置User-Agent
 	extensions.RandomUserAgent(c)
+	c.OnHTML(".item-list", func(e *colly.HTMLElement) {
+		e.DOM.Find(".item-btn").Each(func(i int, selection *goquery.Selection) {
+			hrefStr, _ := selection.Attr("href")
+			if hrefStr == "" {
+				return
+			}
+			c.Visit(fmt.Sprintf("https://zhsc.org%s", hrefStr))
+		})
+	})
 	c.OnHTML(".pagination", func(e *colly.HTMLElement) {
 		curPage := cast.ToInt64(strings.TrimSpace(e.DOM.Find(".active").Find("span").Text()))
 		totalPage := cast.ToInt64(strings.TrimSpace(e.DOM.Find("li").Find("a").Last().Text()))
 		if curPage < totalPage {
 			c.UserAgent = browser.Random()
+			time.Sleep(200 * time.Millisecond)
 			c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-%d.htm", poetryType, curPage+1))
-			time.Sleep(10 * time.Second)
 		}
 	})
-	c.OnHTML(".item-list", func(e *colly.HTMLElement) {
-		e.DOM.Find(".item-btn").Each(func(i int, selection *goquery.Selection) {
-			a, _ := selection.Attr("href")
-			if a == "" {
-				return
-			}
-			c.Visit(fmt.Sprintf("https://zhsc.org%s", a))
-		})
-	})
+
 	c.OnHTML(".work", func(e *colly.HTMLElement) {
 		poetry := &model.Poetry{}
 		poetry.Title = strings.TrimSpace(e.DOM.Find(".item-hd").Text())
 		poetry.Dynasty = strings.TrimSpace(e.DOM.Find(".item-dynasty-author").Find("a").First().Text())
 		poetry.Author = strings.TrimSpace(e.DOM.Find(".item-dynasty-author").Find("a").Last().Text())
 		poetry.Paragraphs = strings.TrimSpace(e.DOM.Find(".item-desc.work-content").Text())
+		authorId, _ := e.DOM.Find(".item-dynasty-author").Find("a").Last().Attr("href")
+		poetry.AuthorId = strings.TrimSuffix(strings.TrimPrefix(strings.TrimSpace(authorId), "/author/author-"), ".htm")
 		switch poetryType {
 		case consts.Shi.Name():
 			poetry.PoetryType = consts.Shi.Description()
@@ -88,8 +91,14 @@ func (s *PoetrySpider) parsePoetry(poetryType string) {
 		interpret.Intro = strings.TrimSpace(e.DOM.Find("#intro").Text())
 		interpret.Annotation = strings.TrimSpace(e.DOM.Find("#annotation").Text())
 		interpret.Translation = strings.TrimSpace(e.DOM.Find("#translation").Text())
+
+		author := &model.Author{}
+		author.AuthorId = poetry.AuthorId
+		author.Name = poetry.Author
+		author.Dynasty = poetry.Dynasty
 		_ = services.GetPoetryService().SavePoetry(poetry, "zhsc_poetry")
 		_ = services.GetInterpretService().SaveInterpret(interpret, "zhsc_poetry")
+		_ = services.GetAuthorService().SaveAuthor(author, "zhsc_poetry")
 	})
 	c.OnError(func(r *colly.Response, err error) {
 		fmt.Println("Request URL:", r.Request.URL, "failed with response:", r, "\nError:", err)
@@ -97,5 +106,5 @@ func (s *PoetrySpider) parsePoetry(poetryType string) {
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL)
 	})
-	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-1.htm", poetryType))
+	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-150.htm", poetryType))
 }

@@ -10,9 +10,14 @@ type SpiderInterface interface {
 	Start()
 }
 
-func NewInstance(platform string) (spider SpiderInterface, err error) {
+func NewInstance(platform, spiderType string) (spider SpiderInterface, err error) {
 	if platform == consts.ZHSC.Name() {
-		spider = zhsc.NewPoetrySpider()
+		switch spiderType {
+		case consts.Author.Name():
+
+		case consts.Poetry.Name():
+			spider = zhsc.NewPoetrySpider()
+		}
 		return
 	}
 	err = fmt.Errorf("current platform:%v is not support", platform)
