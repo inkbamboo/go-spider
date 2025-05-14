@@ -22,10 +22,9 @@ func NewPoetrySpider() *PoetrySpider {
 }
 
 func (s *PoetrySpider) Start() {
-	//https://zhsc.org/shi/page-2.htm
-	s.startPoetry(consts.Shi.Name())
+	//s.startPoetry(consts.Shi.Name())
 	//s.startPoetry(consts.Ci.Name())
-	//s.startPoetry(consts.Qu.Name())
+	s.startPoetry(consts.Qu.Name())
 	//s.startPoetry(consts.Fu.Name())
 	//s.startPoetry(consts.Wen.Name())
 
@@ -57,7 +56,13 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 	})
 	c.OnHTML(".pagination", func(e *colly.HTMLElement) {
 		curPage := cast.ToInt64(strings.TrimSpace(e.DOM.Find(".active").Find("span").Text()))
-		totalPage := cast.ToInt64(strings.TrimSpace(e.DOM.Find("li").Find("a").Last().Text()))
+		var totalPage int64
+		e.DOM.Find("li").Find("a").Each(func(i int, item *goquery.Selection) {
+			temp := cast.ToInt64(item.Text())
+			if temp > totalPage {
+				totalPage = temp
+			}
+		})
 		if curPage < totalPage {
 			c.UserAgent = browser.Random()
 			time.Sleep(2000 * time.Millisecond)
@@ -86,7 +91,7 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL)
 	})
-	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-2121.htm", poetryType))
+	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-1.htm", poetryType))
 }
 func (s *PoetrySpider) parsePoetry(poetryId, poetryType string, e *goquery.Selection) {
 	poetry := &model.Poetry{}
