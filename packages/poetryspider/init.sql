@@ -4,7 +4,7 @@ CREATE TABLE `poetry` (
     `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
     `poetry_id` varchar(255) DEFAULT NULL COMMENT '诗文ID',
-    `title` varchar(255) DEFAULT NULL COMMENT '名称',
+    `title` varchar(500) DEFAULT NULL COMMENT '名称',
     `author_name` varchar(100) DEFAULT NULL COMMENT '作者',
     `author_id` varchar(255) DEFAULT NULL COMMENT '诗文ID',
     `dynasty` varchar(100) DEFAULT NULL COMMENT '朝代',
