@@ -23,8 +23,8 @@ func NewPoetrySpider() *PoetrySpider {
 
 func (s *PoetrySpider) Start() {
 	//s.startPoetry(consts.Shi.Name())
-	//s.startPoetry(consts.Ci.Name())
-	s.startPoetry(consts.Qu.Name())
+	s.startPoetry(consts.Ci.Name())
+	//s.startPoetry(consts.Qu.Name())
 	//s.startPoetry(consts.Fu.Name())
 	//s.startPoetry(consts.Wen.Name())
 
@@ -58,7 +58,7 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		curPage := cast.ToInt64(strings.TrimSpace(e.DOM.Find(".active").Find("span").Text()))
 		var totalPage int64
 		e.DOM.Find("li").Find("a").Each(func(i int, item *goquery.Selection) {
-			temp := cast.ToInt64(item.Text())
+			temp := cast.ToInt64(strings.TrimSpace(item.Text()))
 			if temp > totalPage {
 				totalPage = temp
 			}
@@ -91,7 +91,7 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL)
 	})
-	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-1.htm", poetryType))
+	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-1277.htm", poetryType))
 }
 func (s *PoetrySpider) parsePoetry(poetryId, poetryType string, e *goquery.Selection) {
 	poetry := &model.Poetry{}
