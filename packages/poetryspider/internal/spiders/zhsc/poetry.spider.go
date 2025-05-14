@@ -59,7 +59,7 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		totalPage := cast.ToInt64(strings.TrimSpace(e.DOM.Find("li").Find("a").Last().Text()))
 		if curPage < totalPage {
 			c.UserAgent = browser.Random()
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(3000 * time.Millisecond)
 			c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-%d.htm", poetryType, curPage+1))
 		}
 	})
