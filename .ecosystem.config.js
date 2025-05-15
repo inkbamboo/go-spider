@@ -17,7 +17,7 @@ const configs = {
         GO_ENV: go_env
     },
     env_stage: {
-        env: 'test',
+        env: 'tm',
         GO_ENV: go_env
     },
     env_prod: {
@@ -54,8 +54,8 @@ module.exports = {
         {
             name: "zhsc-poetry-spider",
             cwd: `./dist/poetryspider_${os}_amd64_v1`,
-            script: "housespider",
-            args:`--env ${env} --platform zhsc ps`,
+            script: "poetryspider",
+            args:`--env ${env} --platform zhsc --spider poetry  ps`,
             ...configs,
             max_restarts: 10,
         }

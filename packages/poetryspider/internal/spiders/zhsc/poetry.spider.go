@@ -1,15 +1,23 @@
 package zhsc
 
 import (
+	"context"
 	"fmt"
 	browser "github.com/EDDYCJY/fake-useragent"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/go-redis/redis/v8"
+	"github.com/go-resty/resty/v2"
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/extensions"
+	"github.com/inkbamboo/ares"
 	"github.com/inkbamboo/go-spider/packages/poetryspider/consts"
 	"github.com/inkbamboo/go-spider/packages/poetryspider/internal/model"
 	"github.com/inkbamboo/go-spider/packages/poetryspider/internal/services"
+	"github.com/samber/lo"
 	"github.com/spf13/cast"
+	"github.com/tidwall/gjson"
+	"net/http"
+	"net/url"
 	"strings"
 	"time"
 )
@@ -38,6 +46,31 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		colly.MaxBodySize(2*1024*1024),   //响应正文最大字节数
 		colly.IgnoreRobotsTxt(),          //忽略目标机器中的`robots.txt`声明
 	)
+	c.SetProxyFunc(func(request *http.Request) (*url.URL, error) {
+		authKey := "6E4F6112"
+		password := "6028BC3DB221"
+		redisKey := "ip_proxy"
+		startTime := fmt.Sprintf("%d", time.Now().Unix())
+		endTime := fmt.Sprintf("%d", time.Now().Add(1*time.Minute).Unix())
+		redisClient := ares.Default().GetRedis("base")
+		_ = redisClient.ZRemRangeByScore(context.TODO(), redisKey, fmt.Sprintf("%d", 0), startTime).Val()
+		list := redisClient.ZRangeByScore(context.TODO(), redisKey, &redis.ZRangeBy{
+			Min: startTime,
+			Max: endTime,
+		}).Val()
+		if len(list) <= 10 {
+			resp, _ := resty.New().SetTimeout(20 * time.Second).SetRetryWaitTime(5 * time.Second).R().Get(fmt.Sprintf("https://share.proxy.qg.net/get?key=%s&pwd=%s", authKey, password))
+			ipAddress := gjson.Get(string(resp.Body()), "data.0.server").String()
+			redisClient.ZAdd(context.TODO(), redisKey, &redis.Z{
+				Score:  cast.ToFloat64(endTime),
+				Member: ipAddress,
+			})
+			list = append(list, ipAddress)
+		}
+		proxyUrl, err := url.Parse(fmt.Sprintf("http://%s:%s@%s", authKey, password, lo.Sample(list)))
+		return proxyUrl, err
+	})
+
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*httpbin.*",
 		Parallelism: 1,
@@ -91,7 +124,7 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL)
 	})
-	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-1277.htm", poetryType))
+	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-5104.htm", poetryType))
 }
 func (s *PoetrySpider) parsePoetry(poetryId, poetryType string, e *goquery.Selection) {
 	poetry := &model.Poetry{}
