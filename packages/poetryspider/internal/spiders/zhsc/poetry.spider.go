@@ -16,7 +16,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/spf13/cast"
 	"github.com/tidwall/gjson"
-	"net/http"
 	"net/url"
 	"strings"
 	"time"
@@ -37,6 +36,33 @@ func (s *PoetrySpider) Start() {
 	//s.startPoetry(consts.Wen.Name())
 
 }
+func (s *PoetrySpider) getRandProxy() string {
+	authKey := "6E4F6112"
+	password := "6028BC3DB221"
+	redisKey := "ip_proxy"
+	startTime := fmt.Sprintf("%d", time.Now().Unix())
+	endTime := fmt.Sprintf("%d", time.Now().Add(1*time.Minute).Unix())
+	redisClient := ares.Default().GetRedis("base")
+	list := redisClient.ZRangeByScore(context.TODO(), redisKey, &redis.ZRangeBy{
+		Min: startTime,
+		Max: endTime,
+	}).Val()
+	if len(list) <= 20 {
+		resp, _ := resty.New().SetTimeout(20 * time.Second).SetRetryWaitTime(5 * time.Second).R().Get(fmt.Sprintf("https://share.proxy.qg.net/get?key=%s&pwd=%s", authKey, password))
+		ipAddress := gjson.Get(string(resp.Body()), "data.0.server").String()
+
+		if ipAddress != "" {
+			_ = redisClient.ZAdd(context.TODO(), redisKey, &redis.Z{
+				Score:  cast.ToFloat64(endTime),
+				Member: ipAddress,
+			}).Val()
+			_ = redisClient.ZRemRangeByScore(context.TODO(), redisKey, fmt.Sprintf("%d", 0), startTime).Val()
+			list = append(list, ipAddress)
+		}
+	}
+	proxyUrl, _ := url.Parse(fmt.Sprintf("http://%s:%s@%s", authKey, password, lo.Sample(list)))
+	return proxyUrl.String()
+}
 func (s *PoetrySpider) startPoetry(poetryType string) {
 	c := colly.NewCollector(
 		colly.AllowedDomains("zhsc.org"), //白名单域名
@@ -46,31 +72,6 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		colly.MaxBodySize(2*1024*1024),   //响应正文最大字节数
 		colly.IgnoreRobotsTxt(),          //忽略目标机器中的`robots.txt`声明
 	)
-	c.SetProxyFunc(func(request *http.Request) (*url.URL, error) {
-		authKey := "6E4F6112"
-		password := "6028BC3DB221"
-		redisKey := "ip_proxy"
-		startTime := fmt.Sprintf("%d", time.Now().Unix())
-		endTime := fmt.Sprintf("%d", time.Now().Add(1*time.Minute).Unix())
-		redisClient := ares.Default().GetRedis("base")
-		_ = redisClient.ZRemRangeByScore(context.TODO(), redisKey, fmt.Sprintf("%d", 0), startTime).Val()
-		list := redisClient.ZRangeByScore(context.TODO(), redisKey, &redis.ZRangeBy{
-			Min: startTime,
-			Max: endTime,
-		}).Val()
-		if len(list) <= 10 {
-			resp, _ := resty.New().SetTimeout(20 * time.Second).SetRetryWaitTime(5 * time.Second).R().Get(fmt.Sprintf("https://share.proxy.qg.net/get?key=%s&pwd=%s", authKey, password))
-			ipAddress := gjson.Get(string(resp.Body()), "data.0.server").String()
-			redisClient.ZAdd(context.TODO(), redisKey, &redis.Z{
-				Score:  cast.ToFloat64(endTime),
-				Member: ipAddress,
-			})
-			list = append(list, ipAddress)
-		}
-		proxyUrl, err := url.Parse(fmt.Sprintf("http://%s:%s@%s", authKey, password, lo.Sample(list)))
-		return proxyUrl, err
-	})
-
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*httpbin.*",
 		Parallelism: 1,
@@ -83,7 +84,8 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 			if hrefStr == "" {
 				return
 			}
-			time.Sleep(1000 * time.Millisecond)
+			time.Sleep(200 * time.Millisecond)
+			c.SetProxy(s.getRandProxy())
 			c.Visit(fmt.Sprintf("https://zhsc.org%s", hrefStr))
 		})
 	})
@@ -98,7 +100,8 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		})
 		if curPage < totalPage {
 			c.UserAgent = browser.Random()
-			time.Sleep(2000 * time.Millisecond)
+			time.Sleep(500 * time.Millisecond)
+			c.SetProxy(s.getRandProxy())
 			c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-%d.htm", poetryType, curPage+1))
 		}
 	})
@@ -119,12 +122,15 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 	})
 
 	c.OnError(func(r *colly.Response, err error) {
-		fmt.Println("Request URL:", r.Request.URL, "failed with response:", r, "\nError:", err)
+		fmt.Println("Request URL:", r.Request.URL, "\nError:", err)
+		c.SetProxy(s.getRandProxy())
+		c.Visit(r.Request.URL.String())
 	})
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL)
 	})
-	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-5104.htm", poetryType))
+	c.SetProxy(s.getRandProxy())
+	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-2210.htm", poetryType))
 }
 func (s *PoetrySpider) parsePoetry(poetryId, poetryType string, e *goquery.Selection) {
 	poetry := &model.Poetry{}
