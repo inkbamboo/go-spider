@@ -5,7 +5,7 @@ import (
 	"fmt"
 	browser "github.com/EDDYCJY/fake-useragent"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/go-redis/redis/v8"
+	"github.com/bytedance/sonic"
 	"github.com/go-resty/resty/v2"
 	"github.com/gocolly/colly/v2"
 	"github.com/gocolly/colly/v2/extensions"
@@ -13,6 +13,7 @@ import (
 	"github.com/inkbamboo/go-spider/packages/poetryspider/consts"
 	"github.com/inkbamboo/go-spider/packages/poetryspider/internal/model"
 	"github.com/inkbamboo/go-spider/packages/poetryspider/internal/services"
+	"github.com/patrickmn/go-cache"
 	"github.com/samber/lo"
 	"github.com/spf13/cast"
 	"github.com/tidwall/gjson"
@@ -21,47 +22,90 @@ import (
 	"time"
 )
 
+type ProxyInfo struct {
+	Ip         string    `json:"ip"`
+	Port       int       `json:"port"`
+	Username   string    `json:"username"`
+	Password   string    `json:"password"`
+	Ttl        int       `json:"ttl"`
+	ExpireTime time.Time `json:"expireTime"`
+}
 type PoetrySpider struct {
+	cache *cache.Cache
 }
 
 func NewPoetrySpider() *PoetrySpider {
-	return &PoetrySpider{}
+	return &PoetrySpider{
+		cache: cache.New(time.Minute*5, time.Minute*1),
+	}
 }
 
 func (s *PoetrySpider) Start() {
-	//s.startPoetry(consts.Shi.Name())
-	s.startPoetry(consts.Ci.Name())
+	s.startPoetry(consts.Shi.Name())
+	//s.startPoetry(consts.Ci.Name())
 	//s.startPoetry(consts.Qu.Name())
 	//s.startPoetry(consts.Fu.Name())
 	//s.startPoetry(consts.Wen.Name())
 
 }
-func (s *PoetrySpider) getRandProxy() string {
-	authKey := "6E4F6112"
-	password := "6028BC3DB221"
-	redisKey := "ip_proxy"
-	startTime := fmt.Sprintf("%d", time.Now().Unix())
-	endTime := fmt.Sprintf("%d", time.Now().Add(1*time.Minute).Unix())
-	redisClient := ares.Default().GetRedis("base")
-	list := redisClient.ZRangeByScore(context.TODO(), redisKey, &redis.ZRangeBy{
-		Min: startTime,
-		Max: endTime,
-	}).Val()
-	if len(list) <= 20 {
-		resp, _ := resty.New().SetTimeout(20 * time.Second).SetRetryWaitTime(5 * time.Second).R().Get(fmt.Sprintf("https://share.proxy.qg.net/get?key=%s&pwd=%s", authKey, password))
-		ipAddress := gjson.Get(string(resp.Body()), "data.0.server").String()
-
-		if ipAddress != "" {
-			_ = redisClient.ZAdd(context.TODO(), redisKey, &redis.Z{
-				Score:  cast.ToFloat64(endTime),
-				Member: ipAddress,
-			}).Val()
-			_ = redisClient.ZRemRangeByScore(context.TODO(), redisKey, fmt.Sprintf("%d", 0), startTime).Val()
-			list = append(list, ipAddress)
-		}
+func (s *PoetrySpider) getLocalCacheProxy() (proxyList []*ProxyInfo) {
+	redisKey := "proxy_list"
+	if cacheList, ok := s.cache.Get(redisKey); !ok {
+		proxyList = cacheList.([]*ProxyInfo)
+		proxyList = lo.FilterMap(proxyList, func(item *ProxyInfo, index int) (*ProxyInfo, bool) {
+			return item, item.ExpireTime.After(time.Now())
+		})
 	}
-	proxyUrl, _ := url.Parse(fmt.Sprintf("http://%s:%s@%s", authKey, password, lo.Sample(list)))
-	return proxyUrl.String()
+	return
+}
+func (s *PoetrySpider) getRedisProxy() (proxyList []*ProxyInfo) {
+	redisClient := ares.Default().GetRedis("base")
+	redisKey := "proxy_list"
+	if cacheList := redisClient.Get(context.TODO(), redisKey).String(); len(cacheList) > 0 {
+		_ = sonic.UnmarshalString(cacheList, &proxyList)
+	}
+	proxyList = lo.FilterMap(proxyList, func(item *ProxyInfo, index int) (*ProxyInfo, bool) {
+		return item, item.ExpireTime.After(time.Now())
+	})
+	return
+}
+func (s *PoetrySpider) setCacheProxy(proxyList []*ProxyInfo) {
+	if len(proxyList) == 0 {
+		s.cache.Set("hasProxy", true, cache.DefaultExpiration)
+		return
+	}
+	redisClient := ares.Default().GetRedis("base")
+	redisKey := "proxy_list"
+	s.cache.Set(redisKey, proxyList, cache.DefaultExpiration)
+	str, _ := sonic.MarshalString(proxyList)
+	_ = redisClient.Set(context.TODO(), redisKey, str, 0).Val()
+	return
+}
+func (s *PoetrySpider) getProxyList() (proxyList []*ProxyInfo) {
+	if hasProxy, ok := s.cache.Get("hasProxy"); ok && !hasProxy.(bool) {
+		return
+	}
+	if proxyList = s.getLocalCacheProxy(); len(proxyList) > 0 {
+		return
+	}
+	if proxyList = s.getRedisProxy(); len(proxyList) > 0 {
+		return
+	}
+	resp, _ := resty.New().SetTimeout(20 * time.Second).SetRetryWaitTime(5 * time.Second).R().Get(ares.GetConfig().GetString("proxy"))
+	respBody := string(resp.Body())
+	_ = sonic.UnmarshalString(gjson.Get(respBody, ".data").String(), &proxyList)
+
+	s.setCacheProxy(proxyList)
+	return
+}
+func (s *PoetrySpider) getRandProxy() (proxyUrl string) {
+	proxyInfo := lo.Sample(s.getProxyList())
+	if proxyInfo == nil {
+		return
+	}
+	proxy, _ := url.Parse(fmt.Sprintf("http://%s:%s@%s:%d", proxyInfo.Username, proxyInfo.Password, proxyInfo.Ip, proxyInfo.Port))
+	proxyUrl = proxy.String()
+	return
 }
 func (s *PoetrySpider) startPoetry(poetryType string) {
 	c := colly.NewCollector(
@@ -69,7 +113,7 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		colly.AllowURLRevisit(),          //允许对同一 URL 进行多次下载
 		colly.Async(true),                //设置为异步请求
 		colly.MaxDepth(2),                //爬取页面深度,最多为两层
-		colly.MaxBodySize(2*1024*1024),   //响应正文最大字节数
+		colly.MaxBodySize(100*1024*1024), //响应正文最大字节数
 		colly.IgnoreRobotsTxt(),          //忽略目标机器中的`robots.txt`声明
 	)
 	c.Limit(&colly.LimitRule{
@@ -84,7 +128,7 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 			if hrefStr == "" {
 				return
 			}
-			time.Sleep(200 * time.Millisecond)
+			time.Sleep(50 * time.Millisecond)
 			c.SetProxy(s.getRandProxy())
 			c.Visit(fmt.Sprintf("https://zhsc.org%s", hrefStr))
 		})
@@ -100,7 +144,7 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		})
 		if curPage < totalPage {
 			c.UserAgent = browser.Random()
-			time.Sleep(500 * time.Millisecond)
+			time.Sleep(100 * time.Millisecond)
 			c.SetProxy(s.getRandProxy())
 			c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-%d.htm", poetryType, curPage+1))
 		}
@@ -108,6 +152,7 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 	c.OnResponse(func(r *colly.Response) {
 		// 获取当前访问的 URL
 		urlStr := r.Request.URL.Path
+		fmt.Println("Visiting", urlStr)
 		if !strings.HasPrefix(urlStr, "/work/work-") {
 			return
 		}
@@ -122,15 +167,21 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 	})
 
 	c.OnError(func(r *colly.Response, err error) {
-		fmt.Println("Request URL:", r.Request.URL, "\nError:", err)
+		//fmt.Println("Request URL:", r.Request.URL, "\nError:", err)
 		c.SetProxy(s.getRandProxy())
 		c.Visit(r.Request.URL.String())
 	})
 	c.OnRequest(func(r *colly.Request) {
-		fmt.Println("Visiting", r.URL)
+		//fmt.Println("Visiting", r.URL)
 	})
 	c.SetProxy(s.getRandProxy())
-	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-2210.htm", poetryType))
+	//还差 3160-4500
+	//c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-3160.htm", poetryType))
+
+	// 诗 1-3956 已有  72800 到当前程序爬的位置
+	//c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-3956.htm", poetryType))
+	//c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-72800.htm", poetryType))
+	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-74779.htm", poetryType))
 }
 func (s *PoetrySpider) parsePoetry(poetryId, poetryType string, e *goquery.Selection) {
 	poetry := &model.Poetry{}
