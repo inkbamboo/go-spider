@@ -50,7 +50,7 @@ func (s *PoetrySpider) Start() {
 }
 func (s *PoetrySpider) getLocalCacheProxy() (proxyList []*ProxyInfo) {
 	redisKey := "proxy_list"
-	if cacheList, ok := s.cache.Get(redisKey); !ok {
+	if cacheList, ok := s.cache.Get(redisKey); ok {
 		proxyList = cacheList.([]*ProxyInfo)
 		proxyList = lo.FilterMap(proxyList, func(item *ProxyInfo, index int) (*ProxyInfo, bool) {
 			return item, item.ExpireTime.After(time.Now())
