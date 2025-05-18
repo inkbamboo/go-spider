@@ -23,12 +23,12 @@ import (
 )
 
 type ProxyInfo struct {
-	Ip         string    `json:"ip"`
-	Port       int       `json:"port"`
-	Username   string    `json:"username"`
-	Password   string    `json:"password"`
-	Ttl        int       `json:"ttl"`
-	ExpireTime time.Time `json:"expireTime"`
+	Ip         string `json:"ip"`
+	Port       int    `json:"port"`
+	Username   string `json:"username"`
+	Password   string `json:"password"`
+	Ttl        int    `json:"ttl"`
+	ExpireTime string `json:"expireTime"`
 }
 type PoetrySpider struct {
 	cache *cache.Cache
@@ -53,7 +53,8 @@ func (s *PoetrySpider) getLocalCacheProxy() (proxyList []*ProxyInfo) {
 	if cacheList, ok := s.cache.Get(redisKey); ok {
 		proxyList = cacheList.([]*ProxyInfo)
 		proxyList = lo.FilterMap(proxyList, func(item *ProxyInfo, index int) (*ProxyInfo, bool) {
-			return item, item.ExpireTime.After(time.Now())
+			expireTime, _ := time.ParseInLocation("2006-01-02 15:04:05", item.ExpireTime, time.Local)
+			return item, expireTime.After(time.Now())
 		})
 	}
 	return
@@ -93,7 +94,8 @@ func (s *PoetrySpider) getProxyList() (proxyList []*ProxyInfo) {
 	}
 	resp, _ := resty.New().SetTimeout(20 * time.Second).SetRetryWaitTime(5 * time.Second).R().Get(ares.GetConfig().GetString("proxy"))
 	respBody := string(resp.Body())
-	_ = sonic.UnmarshalString(gjson.Get(respBody, ".data").String(), &proxyList)
+	_ = sonic.UnmarshalString(gjson.Get(respBody, "data").String(), &proxyList)
+	fmt.Printf("*******respBody start %v %v\n", gjson.Get(respBody, "data").String(), proxyList)
 
 	s.setCacheProxy(proxyList)
 	return
