@@ -40,3 +40,11 @@ func (s *PoetryService) SavePoetry(poetry *model.Poetry, alias string) (err erro
 	}
 	return
 }
+func (s *PoetryService) PoetryExists(poetryId string, alias string) (exists bool) {
+	tx := ares.Default().GetOrm(alias)
+	var poetry *model.Poetry
+	if err := tx.Model(&model.Poetry{}).Where("poetry_id=?", poetryId).First(&poetry).Error; err != nil || poetry == nil {
+		return
+	}
+	return poetry.ID > 0
+}

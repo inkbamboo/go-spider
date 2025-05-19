@@ -161,8 +161,13 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 				return
 			}
 			time.Sleep(50 * time.Millisecond)
-			c.SetProxy(s.getRandProxy())
-			c.Visit(fmt.Sprintf("https://zhsc.org%s", hrefStr))
+			poetryId := strings.TrimSuffix(strings.TrimPrefix(hrefStr, "/work/work-"), ".htm")
+			fmt.Printf("*******%+v    %+v\n", poetryId, hrefStr)
+			if !services.GetPoetryService().PoetryExists(poetryId, "zhsc_poetry") {
+				c.SetProxy(s.getRandProxy())
+				c.Visit(fmt.Sprintf("https://zhsc.org%s", hrefStr))
+			}
+
 		})
 	})
 	c.OnHTML(".pagination", func(e *colly.HTMLElement) {
@@ -212,9 +217,9 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 
 	// 诗 1-3956 已有  72800 到当前程序爬的位置
 	//c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-3956.htm", poetryType))
-	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-60000.htm", poetryType))
-	//c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-72800.htm", poetryType))
-	//c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-76933.htm", poetryType))
+	//c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-60000.htm", poetryType))
+	//c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-60368.htm", poetryType))
+	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-72800.htm", poetryType))
 }
 func (s *PoetrySpider) parsePoetry(poetryId, poetryType string, e *goquery.Selection) {
 	poetry := &model.Poetry{}
