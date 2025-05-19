@@ -48,9 +48,12 @@ func (s *PoetrySpider) Start() {
 	//s.startPoetry(consts.Wen.Name())
 
 }
+func (s *PoetrySpider) Test() {
+	proxyList := s.getProxyList()
+	fmt.Printf("*********%+v\n", proxyList)
+}
 func (s *PoetrySpider) getLocalCacheProxy() (proxyList []*ProxyInfo) {
-	redisKey := "proxy_list"
-	if cacheList, ok := s.cache.Get(redisKey); ok {
+	if cacheList, ok := s.cache.Get(consts.GetProxyListKey(ares.GetEnv())); ok {
 		proxyList = cacheList.([]*ProxyInfo)
 		proxyList = lo.FilterMap(proxyList, func(item *ProxyInfo, index int) (*ProxyInfo, bool) {
 			expireTime, _ := time.ParseInLocation("2006-01-02 15:04:05", item.ExpireTime, time.Local)
@@ -61,12 +64,13 @@ func (s *PoetrySpider) getLocalCacheProxy() (proxyList []*ProxyInfo) {
 }
 func (s *PoetrySpider) getRedisProxy() (proxyList []*ProxyInfo) {
 	redisClient := ares.Default().GetRedis("base")
-	redisKey := "proxy_list"
-	if cacheList := redisClient.Get(context.TODO(), redisKey).String(); len(cacheList) > 0 {
+	if cacheList := redisClient.Get(context.TODO(), consts.GetProxyListKey(ares.GetEnv())).Val(); len(cacheList) > 0 {
 		_ = sonic.UnmarshalString(cacheList, &proxyList)
+
 	}
 	proxyList = lo.FilterMap(proxyList, func(item *ProxyInfo, index int) (*ProxyInfo, bool) {
-		return item, item.ExpireTime.After(time.Now())
+		expireTime, _ := time.ParseInLocation("2006-01-02 15:04:05", item.ExpireTime, time.Local)
+		return item, expireTime.After(time.Now())
 	})
 	return
 }
@@ -76,17 +80,33 @@ func (s *PoetrySpider) setCacheProxy(proxyList []*ProxyInfo) {
 		return
 	}
 	redisClient := ares.Default().GetRedis("base")
-	redisKey := "proxy_list"
-	s.cache.Set(redisKey, proxyList, cache.DefaultExpiration)
+	s.cache.Set(consts.GetProxyListKey(ares.GetEnv()), proxyList, cache.DefaultExpiration)
 	str, _ := sonic.MarshalString(proxyList)
-	_ = redisClient.Set(context.TODO(), redisKey, str, 0).Val()
+	_ = redisClient.Set(context.TODO(), consts.GetProxyListKey(ares.GetEnv()), str, 0).Val()
 	return
+}
+func (s *PoetrySpider) checkProxy(proxyList []*ProxyInfo) []*ProxyInfo {
+	var resultList []*ProxyInfo
+	for _, proxyInfo := range proxyList {
+		proxyUrl, _ := url.Parse(fmt.Sprintf("http://%s:%s@%s:%d", proxyInfo.Username, proxyInfo.Password, proxyInfo.Ip, proxyInfo.Port))
+		// 发送请求
+		resp, err := resty.New().SetProxy(proxyUrl.String()).R().Get("https://zhsc.org/")
+		if err != nil {
+			fmt.Printf("Error: %v  proxyUrl %v\n", err, proxyUrl.String())
+			continue
+		}
+		respBody := string(resp.Body())
+		fmt.Println("Response Body:", respBody)
+		resultList = append(resultList, proxyInfo)
+	}
+	return resultList
 }
 func (s *PoetrySpider) getProxyList() (proxyList []*ProxyInfo) {
 	if hasProxy, ok := s.cache.Get("hasProxy"); ok && !hasProxy.(bool) {
 		return
 	}
 	if proxyList = s.getLocalCacheProxy(); len(proxyList) > 0 {
+
 		return
 	}
 	if proxyList = s.getRedisProxy(); len(proxyList) > 0 {
@@ -95,8 +115,11 @@ func (s *PoetrySpider) getProxyList() (proxyList []*ProxyInfo) {
 	resp, _ := resty.New().SetTimeout(20 * time.Second).SetRetryWaitTime(5 * time.Second).R().Get(ares.GetConfig().GetString("proxy"))
 	respBody := string(resp.Body())
 	_ = sonic.UnmarshalString(gjson.Get(respBody, "data").String(), &proxyList)
-	fmt.Printf("*******respBody start %v %v\n", gjson.Get(respBody, "data").String(), proxyList)
-
+	if len(proxyList) > 0 {
+		if proxyList = s.checkProxy(proxyList); len(proxyList) == 0 {
+			return s.getProxyList()
+		}
+	}
 	s.setCacheProxy(proxyList)
 	return
 }
@@ -183,7 +206,7 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 	// 诗 1-3956 已有  72800 到当前程序爬的位置
 	//c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-3956.htm", poetryType))
 	//c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-72800.htm", poetryType))
-	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-74779.htm", poetryType))
+	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-76933.htm", poetryType))
 }
 func (s *PoetrySpider) parsePoetry(poetryId, poetryType string, e *goquery.Selection) {
 	poetry := &model.Poetry{}

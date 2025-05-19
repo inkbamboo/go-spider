@@ -6,6 +6,7 @@ import (
 	"github.com/inkbamboo/go-spider/packages/poetryspider/internal/model"
 	"github.com/inkbamboo/go-spider/packages/poetryspider/internal/services"
 	"github.com/inkbamboo/go-spider/packages/poetryspider/internal/spiders"
+	"github.com/inkbamboo/go-spider/packages/poetryspider/internal/spiders/zhsc"
 )
 
 func RunPoetrySpider(platform, spider string) {
@@ -80,19 +81,21 @@ func getOneBatchInterpret(startId int64) (hasNext bool, endId int64) {
 	return len(list) == 1000, endId
 }
 func RunTest() {
-	var startId int64
-	for {
-		var hasNext bool
-		//if hasNext, startId = getOneBatchPoetry(startId); !hasNext {
-		//	break
-		//}
-		//if hasNext, startId = getOneBatchAuthor(startId); !hasNext {
-		//	break
-		//}
-		if hasNext, startId = getOneBatchInterpret(startId); !hasNext {
-			break
-		}
+	//var startId int64
+	//for {
+	//var hasNext bool
+	//if hasNext, startId = getOneBatchPoetry(startId); !hasNext {
+	//	break
+	//}
+	//if hasNext, startId = getOneBatchAuthor(startId); !hasNext {
+	//	break
+	//}
+	//if hasNext, startId = getOneBatchInterpret(startId); !hasNext {
+	//	break
+	//}
 
-	}
+	//}
+	spider := zhsc.NewPoetrySpider()
+	spider.Test()
 	select {}
 }
