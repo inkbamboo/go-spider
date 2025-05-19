@@ -76,7 +76,7 @@ func (s *PoetrySpider) getRedisProxy() (proxyList []*ProxyInfo) {
 }
 func (s *PoetrySpider) setCacheProxy(proxyList []*ProxyInfo) {
 	if len(proxyList) == 0 {
-		s.cache.Set("hasProxy", true, cache.DefaultExpiration)
+		s.cache.Set(consts.GetHasProxyKey(ares.GetEnv()), true, cache.DefaultExpiration)
 		return
 	}
 	redisClient := ares.Default().GetRedis("base")
@@ -102,7 +102,7 @@ func (s *PoetrySpider) checkProxy(proxyList []*ProxyInfo) []*ProxyInfo {
 	return resultList
 }
 func (s *PoetrySpider) getProxyList() (proxyList []*ProxyInfo) {
-	if hasProxy, ok := s.cache.Get("hasProxy"); ok && !hasProxy.(bool) {
+	if hasProxy, ok := s.cache.Get(consts.GetHasProxyKey(ares.GetEnv())); ok && !hasProxy.(bool) {
 		return
 	}
 	if proxyList = s.getLocalCacheProxy(); len(proxyList) > 0 {
@@ -112,15 +112,22 @@ func (s *PoetrySpider) getProxyList() (proxyList []*ProxyInfo) {
 	if proxyList = s.getRedisProxy(); len(proxyList) > 0 {
 		return
 	}
+	redisClient := ares.Default().GetRedis("base")
+	if locked := redisClient.SetNX(context.TODO(), consts.GetProxyListLockKey(ares.GetEnv()), 1, 300*time.Second).Val(); !locked {
+		return
+	}
 	resp, _ := resty.New().SetTimeout(20 * time.Second).SetRetryWaitTime(5 * time.Second).R().Get(ares.GetConfig().GetString("proxy"))
 	respBody := string(resp.Body())
 	_ = sonic.UnmarshalString(gjson.Get(respBody, "data").String(), &proxyList)
+	fmt.Printf("getProxyList%v\n", respBody)
 	if len(proxyList) > 0 {
 		if proxyList = s.checkProxy(proxyList); len(proxyList) == 0 {
+			_ = redisClient.Del(context.TODO(), consts.GetProxyListLockKey(ares.GetEnv())).Val()
 			return s.getProxyList()
 		}
 	}
 	s.setCacheProxy(proxyList)
+	_ = redisClient.Del(context.TODO(), consts.GetProxyListLockKey(ares.GetEnv())).Val()
 	return
 }
 func (s *PoetrySpider) getRandProxy() (proxyUrl string) {
@@ -205,8 +212,9 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 
 	// 诗 1-3956 已有  72800 到当前程序爬的位置
 	//c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-3956.htm", poetryType))
+	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-60000.htm", poetryType))
 	//c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-72800.htm", poetryType))
-	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-76933.htm", poetryType))
+	//c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-76933.htm", poetryType))
 }
 func (s *PoetrySpider) parsePoetry(poetryId, poetryType string, e *goquery.Selection) {
 	poetry := &model.Poetry{}
