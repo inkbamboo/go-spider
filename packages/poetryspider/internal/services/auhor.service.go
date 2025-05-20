@@ -39,10 +39,18 @@ func (s *AuthorService) SaveAuthor(author *model.Author, alias string) (err erro
 	}
 	return
 }
-func (s *AuthorService) GetAuthor(alias, authorId string) (author *model.Author, err error) {
+func (s *AuthorService) GetAuthor(authorId, alias string) (author *model.Author, err error) {
 	tx := ares.Default().GetOrm(alias)
 	err = tx.Model(&model.Author{}).Where("author_id=?", authorId).First(&author).Error
 	return
+}
+func (s *AuthorService) AuthorExists(authorId string, alias string) (exists bool) {
+	tx := ares.Default().GetOrm(alias)
+	var author *model.Author
+	if err := tx.Model(&model.Author{}).Where("author_id=?", authorId).First(&author).Error; err != nil || author == nil {
+		return
+	}
+	return author.ID > 0
 }
 func (s *AuthorService) GetAllAuthor(alias string) (authors []*model.Author, err error) {
 	tx := ares.Default().GetOrm(alias)

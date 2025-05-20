@@ -25,6 +25,9 @@ func getOneBatchPoetry(startId int64) (hasNext bool, endId int64) {
 		if item.ID > endId {
 			endId = item.ID
 		}
+		if services.GetPoetryService().PoetryExists(item.PoetryId, "zhsc_poetry") {
+			continue
+		}
 		_ = services.GetPoetryService().SavePoetry(&model.Poetry{
 			PoetryId:   item.PoetryId,
 			Title:      item.Title,
@@ -48,6 +51,9 @@ func getOneBatchAuthor(startId int64) (hasNext bool, endId int64) {
 		if item.ID > endId {
 			endId = item.ID
 		}
+		if services.GetAuthorService().AuthorExists(item.AuthorId, "zhsc_poetry") {
+			continue
+		}
 		_ = services.GetAuthorService().SaveAuthor(&model.Author{
 			AuthorId:   item.AuthorId,
 			AuthorName: item.AuthorName,
@@ -68,6 +74,9 @@ func getOneBatchInterpret(startId int64) (hasNext bool, endId int64) {
 		if item.ID > endId {
 			endId = item.ID
 		}
+		if services.GetInterpretService().InterpretExists(item.PoetryId, "zhsc_poetry") {
+			continue
+		}
 		_ = services.GetInterpretService().SaveInterpret(&model.Interpret{
 			PoetryId:    item.PoetryId,
 			Translation: item.Translation,
@@ -83,15 +92,15 @@ func RunTest() {
 	var startId int64
 	for {
 		var hasNext bool
-		//if hasNext, startId = getOneBatchPoetry(startId); !hasNext {
-		//	break
-		//}
+		if hasNext, startId = getOneBatchPoetry(startId); !hasNext {
+			break
+		}
 		//if hasNext, startId = getOneBatchAuthor(startId); !hasNext {
 		//	break
 		//}
-		if hasNext, startId = getOneBatchInterpret(startId); !hasNext {
-			break
-		}
+		//if hasNext, startId = getOneBatchInterpret(startId); !hasNext {
+		//	break
+		//}
 	}
 	//spider := zhsc.NewPoetrySpider()
 	//spider.Test()

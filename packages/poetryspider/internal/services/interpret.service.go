@@ -38,3 +38,11 @@ func (s *InterpretService) SaveInterpret(interpret *model.Interpret, alias strin
 	}
 	return
 }
+func (s *InterpretService) InterpretExists(poetryId string, alias string) (exists bool) {
+	tx := ares.Default().GetOrm(alias)
+	var interpret *model.Interpret
+	if err := tx.Model(&model.Poetry{}).Where("poetry_id=?", poetryId).First(&interpret).Error; err != nil || interpret == nil {
+		return
+	}
+	return interpret.ID > 0
+}
