@@ -31,7 +31,8 @@ type ProxyInfo struct {
 	ExpireTime string `json:"expireTime"`
 }
 type PoetrySpider struct {
-	cache *cache.Cache
+	cache    *cache.Cache
+	checkUrl string
 }
 
 func NewPoetrySpider() *PoetrySpider {
@@ -90,7 +91,7 @@ func (s *PoetrySpider) checkProxy(proxyList []*ProxyInfo) []*ProxyInfo {
 	for _, proxyInfo := range proxyList {
 		proxyUrl, _ := url.Parse(fmt.Sprintf("http://%s:%s@%s:%d", proxyInfo.Username, proxyInfo.Password, proxyInfo.Ip, proxyInfo.Port))
 		// 发送请求
-		resp, err := resty.New().SetProxy(proxyUrl.String()).R().Get("https://zhsc.org/")
+		resp, err := resty.New().SetProxy(proxyUrl.String()).R().Get(s.checkUrl)
 		if err != nil {
 			fmt.Printf("Error: %v  proxyUrl %v\n", err, proxyUrl.String())
 			continue
@@ -148,7 +149,7 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		colly.MaxBodySize(100*1024*1024), //响应正文最大字节数
 		colly.IgnoreRobotsTxt(),          //忽略目标机器中的`robots.txt`声明
 	)
-	c.Limit(&colly.LimitRule{
+	_ = c.Limit(&colly.LimitRule{
 		DomainGlob:  "*httpbin.*",
 		Parallelism: 1,
 		RandomDelay: 10 * time.Second})
@@ -162,10 +163,9 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 			}
 			time.Sleep(50 * time.Millisecond)
 			poetryId := strings.TrimSuffix(strings.TrimPrefix(hrefStr, "/work/work-"), ".htm")
-			fmt.Printf("*******%+v    %+v\n", poetryId, hrefStr)
 			if !services.GetPoetryService().PoetryExists(poetryId, "zhsc_poetry") {
-				c.SetProxy(s.getRandProxy())
-				c.Visit(fmt.Sprintf("https://zhsc.org%s", hrefStr))
+				_ = c.SetProxy(s.getRandProxy())
+				_ = c.Visit(fmt.Sprintf("https://zhsc.org%s", hrefStr))
 			}
 
 		})
@@ -182,8 +182,10 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		if curPage < totalPage {
 			c.UserAgent = browser.Random()
 			time.Sleep(100 * time.Millisecond)
-			c.SetProxy(s.getRandProxy())
-			c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-%d.htm", poetryType, curPage+1))
+			urlStr := fmt.Sprintf("https://zhsc.org/%s/page-%d.htm", poetryType, curPage+1)
+			s.checkUrl = urlStr
+			_ = c.SetProxy(s.getRandProxy())
+			_ = c.Visit(urlStr)
 		}
 	})
 	c.OnResponse(func(r *colly.Response) {
@@ -205,21 +207,24 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 
 	c.OnError(func(r *colly.Response, err error) {
 		//fmt.Println("Request URL:", r.Request.URL, "\nError:", err)
-		c.SetProxy(s.getRandProxy())
-		c.Visit(r.Request.URL.String())
+		_ = c.SetProxy(s.getRandProxy())
+		_ = c.Visit(r.Request.URL.String())
 	})
 	c.OnRequest(func(r *colly.Request) {
 		//fmt.Println("Visiting", r.URL)
 	})
-	c.SetProxy(s.getRandProxy())
+	_ = c.SetProxy(s.getRandProxy())
 	//还差 3160-4500
 	//c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-3160.htm", poetryType))
 
-	// 诗 1-3956 已有  72800 到当前程序爬的位置
-	//c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-3956.htm", poetryType))
-	//c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-60000.htm", poetryType))
-	//c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-60368.htm", poetryType))
-	c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-72800.htm", poetryType))
+	//从 1 开始
+	//urlStr:=fmt.Sprintf("https://zhsc.org/%s/page-3956.htm", poetryType)
+	// 从 60000 开始
+	//urlStr := fmt.Sprintf("https://zhsc.org/%s/page-64645.htm", poetryType)
+	// 从 72800 开始
+	urlStr := fmt.Sprintf("https://zhsc.org/%s/page-81273.htm", poetryType)
+	s.checkUrl = urlStr
+	_ = c.Visit(urlStr)
 }
 func (s *PoetrySpider) parsePoetry(poetryId, poetryType string, e *goquery.Selection) {
 	poetry := &model.Poetry{}
