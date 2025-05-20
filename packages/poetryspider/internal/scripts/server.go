@@ -26,7 +26,7 @@ func getOneBatchPoetry(startId int64, batchSize int) (hasNext bool, endId int64)
 		if item.ID > endId {
 			endId = item.ID
 		}
-		time.Sleep(3 * time.Millisecond)
+		time.Sleep(2 * time.Millisecond)
 		if services.GetPoetryService().PoetryExists(item.PoetryId, "zhsc_poetry") {
 			continue
 		}
@@ -52,7 +52,7 @@ func getOneBatchAuthor(startId int64, batchSize int) (hasNext bool, endId int64)
 		if item.ID > endId {
 			endId = item.ID
 		}
-		time.Sleep(3 * time.Millisecond)
+		time.Sleep(2 * time.Millisecond)
 		if services.GetAuthorService().AuthorExists(item.AuthorId, "zhsc_poetry") {
 			continue
 		}
@@ -77,7 +77,7 @@ func getOneBatchInterpret(startId int64, batchSize int) (hasNext bool, endId int
 		if item.ID > endId {
 			endId = item.ID
 		}
-		time.Sleep(3 * time.Millisecond)
+		time.Sleep(2 * time.Millisecond)
 		if services.GetInterpretService().InterpretExists(item.PoetryId, "zhsc_poetry") {
 			continue
 		}
