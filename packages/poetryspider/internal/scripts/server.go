@@ -18,10 +18,10 @@ func RunPoetrySpider(platform, spider string) {
 	}
 	select {}
 }
-func getOneBatchPoetry(startId int64) (hasNext bool, endId int64) {
+func getOneBatchPoetry(startId int64, batchSize int) (hasNext bool, endId int64) {
 	stageTx := ares.Default().GetOrm("stage_zhsc_poetry")
 	var list []*model.Poetry
-	_ = stageTx.Model(&model.Poetry{}).Where("id>?", startId).Order("id asc").Limit(1000).Find(&list).Error
+	_ = stageTx.Model(&model.Poetry{}).Where("id>?", startId).Order("id asc").Limit(batchSize).Find(&list).Error
 	for _, item := range list {
 		if item.ID > endId {
 			endId = item.ID
@@ -42,12 +42,12 @@ func getOneBatchPoetry(startId int64) (hasNext bool, endId int64) {
 		fmt.Printf("************ %+v %+v  %+v\n", item.ID, item.PoetryId, item.Title)
 	}
 
-	return len(list) == 1000, endId
+	return len(list) == batchSize, endId
 }
-func getOneBatchAuthor(startId int64) (hasNext bool, endId int64) {
+func getOneBatchAuthor(startId int64, batchSize int) (hasNext bool, endId int64) {
 	stageTx := ares.Default().GetOrm("stage_zhsc_poetry")
 	var list []*model.Author
-	_ = stageTx.Model(&model.Author{}).Where("id>?", startId).Order("id asc").Limit(1000).Find(&list).Error
+	_ = stageTx.Model(&model.Author{}).Where("id>?", startId).Order("id asc").Limit(batchSize).Find(&list).Error
 	for _, item := range list {
 		if item.ID > endId {
 			endId = item.ID
@@ -67,12 +67,12 @@ func getOneBatchAuthor(startId int64) (hasNext bool, endId int64) {
 
 	}
 
-	return len(list) == 1000, endId
+	return len(list) == batchSize, endId
 }
-func getOneBatchInterpret(startId int64) (hasNext bool, endId int64) {
+func getOneBatchInterpret(startId int64, batchSize int) (hasNext bool, endId int64) {
 	stageTx := ares.Default().GetOrm("stage_zhsc_poetry")
 	var list []*model.Interpret
-	_ = stageTx.Model(&model.Interpret{}).Where("id>?", startId).Order("id asc").Limit(1000).Find(&list).Error
+	_ = stageTx.Model(&model.Interpret{}).Where("id>?", startId).Order("id asc").Limit(batchSize).Find(&list).Error
 	for _, item := range list {
 		if item.ID > endId {
 			endId = item.ID
@@ -91,7 +91,7 @@ func getOneBatchInterpret(startId int64) (hasNext bool, endId int64) {
 
 	}
 
-	return len(list) == 1000, endId
+	return len(list) == batchSize, endId
 }
 func RunTest() {
 	var startId int64
@@ -100,12 +100,12 @@ func RunTest() {
 		//if hasNext, startId = getOneBatchPoetry(startId); !hasNext {
 		//	break
 		//}
-		//if hasNext, startId = getOneBatchAuthor(startId); !hasNext {
-		//	break
-		//}
-		if hasNext, startId = getOneBatchInterpret(startId); !hasNext {
+		if hasNext, startId = getOneBatchAuthor(startId); !hasNext {
 			break
 		}
+		//if hasNext, startId = getOneBatchInterpret(startId); !hasNext {
+		//	break
+		//}
 	}
 	//spider := zhsc.NewPoetrySpider()
 	//spider.Test()
