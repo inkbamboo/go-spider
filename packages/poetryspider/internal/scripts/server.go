@@ -6,6 +6,7 @@ import (
 	"github.com/inkbamboo/go-spider/packages/poetryspider/internal/model"
 	"github.com/inkbamboo/go-spider/packages/poetryspider/internal/services"
 	"github.com/inkbamboo/go-spider/packages/poetryspider/internal/spiders"
+	"time"
 )
 
 func RunPoetrySpider(platform, spider string) {
@@ -25,6 +26,7 @@ func getOneBatchPoetry(startId int64) (hasNext bool, endId int64) {
 		if item.ID > endId {
 			endId = item.ID
 		}
+		time.Sleep(3 * time.Millisecond)
 		if services.GetPoetryService().PoetryExists(item.PoetryId, "zhsc_poetry") {
 			continue
 		}
@@ -37,7 +39,6 @@ func getOneBatchPoetry(startId int64) (hasNext bool, endId int64) {
 			PoetryType: item.PoetryType,
 			Paragraphs: item.Paragraphs,
 		}, "zhsc_poetry")
-
 		fmt.Printf("************ %+v %+v  %+v\n", item.ID, item.PoetryId, item.Title)
 	}
 
@@ -51,6 +52,7 @@ func getOneBatchAuthor(startId int64) (hasNext bool, endId int64) {
 		if item.ID > endId {
 			endId = item.ID
 		}
+		time.Sleep(3 * time.Millisecond)
 		if services.GetAuthorService().AuthorExists(item.AuthorId, "zhsc_poetry") {
 			continue
 		}
@@ -62,6 +64,7 @@ func getOneBatchAuthor(startId int64) (hasNext bool, endId int64) {
 			Intro:      item.Intro,
 		}, "zhsc_poetry")
 		fmt.Printf("************ %+v %+v  %+v\n", item.ID, item.AuthorId, item.AuthorName)
+
 	}
 
 	return len(list) == 1000, endId
@@ -74,6 +77,7 @@ func getOneBatchInterpret(startId int64) (hasNext bool, endId int64) {
 		if item.ID > endId {
 			endId = item.ID
 		}
+		time.Sleep(3 * time.Millisecond)
 		if services.GetInterpretService().InterpretExists(item.PoetryId, "zhsc_poetry") {
 			continue
 		}
@@ -84,6 +88,7 @@ func getOneBatchInterpret(startId int64) (hasNext bool, endId int64) {
 			Intro:       item.Intro,
 		}, "zhsc_poetry")
 		fmt.Printf("************ %+v  %+v \n", item.ID, item.PoetryId)
+
 	}
 
 	return len(list) == 1000, endId
@@ -92,15 +97,15 @@ func RunTest() {
 	var startId int64
 	for {
 		var hasNext bool
-		if hasNext, startId = getOneBatchPoetry(startId); !hasNext {
-			break
-		}
+		//if hasNext, startId = getOneBatchPoetry(startId); !hasNext {
+		//	break
+		//}
 		//if hasNext, startId = getOneBatchAuthor(startId); !hasNext {
 		//	break
 		//}
-		//if hasNext, startId = getOneBatchInterpret(startId); !hasNext {
-		//	break
-		//}
+		if hasNext, startId = getOneBatchInterpret(startId); !hasNext {
+			break
+		}
 	}
 	//spider := zhsc.NewPoetrySpider()
 	//spider.Test()
