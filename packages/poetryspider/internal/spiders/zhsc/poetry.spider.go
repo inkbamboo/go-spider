@@ -206,8 +206,8 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		// 获取当前访问的 URL
 		urlStr := r.Request.URL.Path
 		fmt.Println("Visiting", urlStr)
-		if strings.HasPrefix(urlStr, "shi/page-") {
-			currentPage := strings.TrimSuffix(strings.TrimPrefix(urlStr, "shi/page-"), ".htm")
+		if strings.HasPrefix(urlStr, fmt.Sprintf("%s/page-", poetryType)) {
+			currentPage := strings.TrimSuffix(strings.TrimPrefix(urlStr, fmt.Sprintf("%s/page-", poetryType)), ".htm")
 			s.setPoetryPage(poetryType, "start", cast.ToInt64(currentPage))
 			return
 		}
