@@ -136,6 +136,20 @@ func (s *PoetrySpider) getRandProxy() (proxyUrl string) {
 	proxyUrl = proxy.String()
 	return
 }
+
+func (s *PoetrySpider) getPoetryPage(poetryType, pageType string) (page int64) {
+	redisClient := ares.Default().GetRedis("base")
+	page, _ = redisClient.Get(context.TODO(), consts.GetPoetryPageKey(ares.GetEnv(), poetryType, pageType)).Int64()
+	if page == 0 {
+		page = 1
+	}
+	return
+}
+func (s *PoetrySpider) setPoetryPage(poetryType, pageType string, page int64) {
+	redisClient := ares.Default().GetRedis("base")
+	redisClient.Set(context.TODO(), consts.GetPoetryPageKey(ares.GetEnv(), poetryType, pageType), page, 0).Val()
+	return
+}
 func (s *PoetrySpider) startPoetry(poetryType string) {
 	c := colly.NewCollector(
 		colly.AllowedDomains("zhsc.org"), //白名单域名
@@ -192,6 +206,11 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		// 获取当前访问的 URL
 		urlStr := r.Request.URL.Path
 		fmt.Println("Visiting", urlStr)
+		if strings.HasPrefix(urlStr, "shi/page-") {
+			currentPage := strings.TrimSuffix(strings.TrimPrefix(urlStr, "shi/page-"), ".htm")
+			s.setPoetryPage(poetryType, "start", cast.ToInt64(currentPage))
+			return
+		}
 		if !strings.HasPrefix(urlStr, "/work/work-") {
 			return
 		}
@@ -224,7 +243,9 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 	//s.endPage = 72800
 	//urlStr := fmt.Sprintf("https://zhsc.org/%s/page-67003.htm", poetryType)
 	// 从 72800 开始
-	urlStr := fmt.Sprintf("https://zhsc.org/%s/page-84513.htm", poetryType)
+	startPage := s.getPoetryPage(poetryType, "start")
+	s.endPage = s.getPoetryPage(poetryType, "end")
+	urlStr := fmt.Sprintf("https://zhsc.org/%s/page-%d.htm", poetryType, startPage)
 	s.checkUrl = urlStr
 	_ = c.Visit(urlStr)
 }
