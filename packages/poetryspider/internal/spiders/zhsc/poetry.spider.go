@@ -43,8 +43,8 @@ func NewPoetrySpider() *PoetrySpider {
 }
 
 func (s *PoetrySpider) Start() {
-	//s.startPoetry(consts.Shi.Name())
-	s.startPoetry(consts.Ci.Name())
+	s.startPoetry(consts.Shi.Name())
+	//s.startPoetry(consts.Ci.Name())
 	//s.startPoetry(consts.Qu.Name())
 	//s.startPoetry(consts.Fu.Name())
 	//s.startPoetry(consts.Wen.Name())
@@ -149,6 +149,7 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		colly.MaxBodySize(100*1024*1024), //响应正文最大字节数
 		colly.IgnoreRobotsTxt(),          //忽略目标机器中的`robots.txt`声明
 	)
+	c.SetRequestTimeout(30 * time.Second)
 	_ = c.Limit(&colly.LimitRule{
 		DomainGlob:  "*httpbin.*",
 		Parallelism: 1,
@@ -218,8 +219,8 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 	})
 	_ = c.SetProxy(s.getRandProxy())
 	//还差 3160-4500
-	s.endPage = 4500
-	urlStr := fmt.Sprintf("https://zhsc.org/%s/page-3160.htm", poetryType)
+	//s.endPage = 4500
+	//urlStr := fmt.Sprintf("https://zhsc.org/%s/page-3160.htm", poetryType)
 	//从 1 开始
 	//urlStr:=fmt.Sprintf("https://zhsc.org/%s/page-3956.htm", poetryType)
 
@@ -227,7 +228,7 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 	//s.endPage = 72800
 	//urlStr := fmt.Sprintf("https://zhsc.org/%s/page-67003.htm", poetryType)
 	// 从 72800 开始
-	//urlStr := fmt.Sprintf("https://zhsc.org/%s/page-84217.htm", poetryType)
+	urlStr := fmt.Sprintf("https://zhsc.org/%s/page-84513.htm", poetryType)
 	s.checkUrl = urlStr
 	_ = c.Visit(urlStr)
 }
