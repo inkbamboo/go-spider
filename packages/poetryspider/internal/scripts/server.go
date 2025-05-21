@@ -26,7 +26,7 @@ func getOneBatchPoetry(startId int64, batchSize int) (hasNext bool, endId int64)
 		if item.ID > endId {
 			endId = item.ID
 		}
-		time.Sleep(2 * time.Millisecond)
+		time.Sleep(3 * time.Millisecond)
 		if services.GetPoetryService().PoetryExists(item.PoetryId, "zhsc_poetry") {
 			continue
 		}
@@ -52,7 +52,7 @@ func getOneBatchAuthor(startId int64, batchSize int) (hasNext bool, endId int64)
 		if item.ID > endId {
 			endId = item.ID
 		}
-		time.Sleep(2 * time.Millisecond)
+		time.Sleep(3 * time.Millisecond)
 		if services.GetAuthorService().AuthorExists(item.AuthorId, "zhsc_poetry") {
 			continue
 		}
@@ -77,7 +77,7 @@ func getOneBatchInterpret(startId int64, batchSize int) (hasNext bool, endId int
 		if item.ID > endId {
 			endId = item.ID
 		}
-		time.Sleep(2 * time.Millisecond)
+		time.Sleep(3 * time.Millisecond)
 		if services.GetInterpretService().InterpretExists(item.PoetryId, "zhsc_poetry") {
 			continue
 		}
@@ -95,18 +95,18 @@ func getOneBatchInterpret(startId int64, batchSize int) (hasNext bool, endId int
 }
 func RunTest() {
 	var startId int64
-	batchSize := 200
+	batchSize := 2000
 	for {
 		var hasNext bool
-		//if hasNext, startId = getOneBatchPoetry(startId,batchSize); !hasNext {
+		//if hasNext, startId = getOneBatchPoetry(startId, batchSize); !hasNext {
 		//	break
 		//}
-		if hasNext, startId = getOneBatchAuthor(startId, batchSize); !hasNext {
+		//if hasNext, startId = getOneBatchAuthor(startId, batchSize); !hasNext {
+		//	break
+		//}
+		if hasNext, startId = getOneBatchInterpret(startId, batchSize); !hasNext {
 			break
 		}
-		//if hasNext, startId = getOneBatchInterpret(startId,batchSize); !hasNext {
-		//	break
-		//}
 	}
 	//spider := zhsc.NewPoetrySpider()
 	//spider.Test()

@@ -33,6 +33,7 @@ type ProxyInfo struct {
 type PoetrySpider struct {
 	cache    *cache.Cache
 	checkUrl string
+	endPage  int64
 }
 
 func NewPoetrySpider() *PoetrySpider {
@@ -42,8 +43,8 @@ func NewPoetrySpider() *PoetrySpider {
 }
 
 func (s *PoetrySpider) Start() {
-	s.startPoetry(consts.Shi.Name())
-	//s.startPoetry(consts.Ci.Name())
+	//s.startPoetry(consts.Shi.Name())
+	s.startPoetry(consts.Ci.Name())
 	//s.startPoetry(consts.Qu.Name())
 	//s.startPoetry(consts.Fu.Name())
 	//s.startPoetry(consts.Wen.Name())
@@ -179,6 +180,9 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 				totalPage = temp
 			}
 		})
+		if s.endPage > 0 && s.endPage < totalPage {
+			totalPage = s.endPage
+		}
 		if curPage < totalPage {
 			c.UserAgent = browser.Random()
 			time.Sleep(100 * time.Millisecond)
@@ -215,14 +219,16 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 	})
 	_ = c.SetProxy(s.getRandProxy())
 	//还差 3160-4500
-	//c.Visit(fmt.Sprintf("https://zhsc.org/%s/page-3160.htm", poetryType))
-
+	s.endPage = 4500
+	urlStr := fmt.Sprintf("https://zhsc.org/%s/page-3160.htm", poetryType)
 	//从 1 开始
 	//urlStr:=fmt.Sprintf("https://zhsc.org/%s/page-3956.htm", poetryType)
+
 	// 从 60000 开始
-	//urlStr := fmt.Sprintf("https://zhsc.org/%s/page-64645.htm", poetryType)
+	//s.endPage = 72800
+	//urlStr := fmt.Sprintf("https://zhsc.org/%s/page-67003.htm", poetryType)
 	// 从 72800 开始
-	urlStr := fmt.Sprintf("https://zhsc.org/%s/page-81273.htm", poetryType)
+	//urlStr := fmt.Sprintf("https://zhsc.org/%s/page-83421.htm", poetryType)
 	s.checkUrl = urlStr
 	_ = c.Visit(urlStr)
 }
