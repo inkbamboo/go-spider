@@ -108,7 +108,5 @@ func RunTest() {
 			break
 		}
 	}
-	//spider := zhsc.NewPoetrySpider()
-	//spider.Test()
 	select {}
 }

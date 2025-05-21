@@ -50,10 +50,6 @@ func (s *PoetrySpider) Start() {
 	//s.startPoetry(consts.Wen.Name())
 
 }
-func (s *PoetrySpider) Test() {
-	proxyList := s.getProxyList()
-	fmt.Printf("*********%+v\n", proxyList)
-}
 func (s *PoetrySpider) getLocalCacheProxy() (proxyList []*ProxyInfo) {
 	if cacheList, ok := s.cache.Get(consts.GetProxyListKey(ares.GetEnv())); ok {
 		proxyList = cacheList.([]*ProxyInfo)
@@ -149,7 +145,7 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		colly.MaxBodySize(100*1024*1024), //响应正文最大字节数
 		colly.IgnoreRobotsTxt(),          //忽略目标机器中的`robots.txt`声明
 	)
-	c.SetRequestTimeout(30 * time.Second)
+	c.SetRequestTimeout(time.Duration(ares.GetConfig().GetInt64("timeout")) * time.Second)
 	_ = c.Limit(&colly.LimitRule{
 		DomainGlob:  "*httpbin.*",
 		Parallelism: 1,

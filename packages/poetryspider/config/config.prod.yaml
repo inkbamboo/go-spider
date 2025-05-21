@@ -17,3 +17,5 @@ caches:
     port: 6379
     password: "123456"
     db: 0
+timeout: 20
+proxy: ""
