@@ -38,7 +38,7 @@ type PoetrySpider struct {
 
 func NewPoetrySpider() *PoetrySpider {
 	return &PoetrySpider{
-		cache: cache.New(time.Minute*5, time.Minute*1),
+		cache: cache.New(time.Minute*1, time.Second*10),
 	}
 }
 
@@ -108,7 +108,6 @@ func (s *PoetrySpider) getProxyList() (proxyList []*ProxyInfo) {
 		return
 	}
 	if proxyList = s.getLocalCacheProxy(); len(proxyList) > 0 {
-
 		return
 	}
 	if proxyList = s.getRedisProxy(); len(proxyList) > 0 {
@@ -228,7 +227,7 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 	//s.endPage = 72800
 	//urlStr := fmt.Sprintf("https://zhsc.org/%s/page-67003.htm", poetryType)
 	// 从 72800 开始
-	//urlStr := fmt.Sprintf("https://zhsc.org/%s/page-83421.htm", poetryType)
+	//urlStr := fmt.Sprintf("https://zhsc.org/%s/page-84217.htm", poetryType)
 	s.checkUrl = urlStr
 	_ = c.Visit(urlStr)
 }
