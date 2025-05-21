@@ -43,8 +43,8 @@ func NewPoetrySpider() *PoetrySpider {
 }
 
 func (s *PoetrySpider) Start() {
-	s.startPoetry(consts.Shi.Name())
-	//s.startPoetry(consts.Ci.Name())
+	//s.startPoetry(consts.Shi.Name())
+	s.startPoetry(consts.Ci.Name())
 	//s.startPoetry(consts.Qu.Name())
 	//s.startPoetry(consts.Fu.Name())
 	//s.startPoetry(consts.Wen.Name())
@@ -206,8 +206,8 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		// 获取当前访问的 URL
 		urlStr := r.Request.URL.Path
 		fmt.Println("Visiting", urlStr)
-		if strings.HasPrefix(urlStr, fmt.Sprintf("%s/page-", poetryType)) {
-			currentPage := strings.TrimSuffix(strings.TrimPrefix(urlStr, fmt.Sprintf("%s/page-", poetryType)), ".htm")
+		if strings.HasPrefix(urlStr, fmt.Sprintf("/%s/page-", poetryType)) {
+			currentPage := strings.TrimSuffix(strings.TrimPrefix(urlStr, fmt.Sprintf("/%s/page-", poetryType)), ".htm")
 			s.setPoetryPage(poetryType, "start", cast.ToInt64(currentPage))
 			return
 		}
