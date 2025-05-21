@@ -94,19 +94,19 @@ func getOneBatchInterpret(startId int64, batchSize int) (hasNext bool, endId int
 	return len(list) == batchSize, endId
 }
 func RunTest() {
-	var startId int64
-	batchSize := 2000
-	for {
-		var hasNext bool
-		//if hasNext, startId = getOneBatchPoetry(startId, batchSize); !hasNext {
-		//	break
-		//}
-		//if hasNext, startId = getOneBatchAuthor(startId, batchSize); !hasNext {
-		//	break
-		//}
-		if hasNext, startId = getOneBatchInterpret(startId, batchSize); !hasNext {
-			break
-		}
-	}
+	//var startId int64
+	//batchSize := 2000
+	//for {
+	//	var hasNext bool
+	//	//if hasNext, startId = getOneBatchPoetry(startId, batchSize); !hasNext {
+	//	//	break
+	//	//}
+	//	//if hasNext, startId = getOneBatchAuthor(startId, batchSize); !hasNext {
+	//	//	break
+	//	//}
+	//	if hasNext, startId = getOneBatchInterpret(startId, batchSize); !hasNext {
+	//		break
+	//	}
+	//}
 	select {}
 }
