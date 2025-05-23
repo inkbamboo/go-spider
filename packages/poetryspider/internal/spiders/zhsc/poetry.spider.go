@@ -19,7 +19,13 @@ import (
 	"github.com/tidwall/gjson"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
+)
+
+var (
+	activeRequests int        // 活跃请求数
+	mu             sync.Mutex // 互斥锁，保证并发安全
 )
 
 type ProxyInfo struct {
@@ -159,6 +165,11 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		colly.MaxBodySize(100*1024*1024), //响应正文最大字节数
 		colly.IgnoreRobotsTxt(),          //忽略目标机器中的`robots.txt`声明
 	)
+	_ = c.Limit(&colly.LimitRule{
+		DomainGlob:  "*",
+		Parallelism: 3,
+		Delay:       20 * time.Millisecond, // 可选：请求间隔
+	})
 	c.SetRequestTimeout(time.Duration(ares.GetConfig().GetInt64("timeout")) * time.Second)
 	_ = c.Limit(&colly.LimitRule{
 		DomainGlob:  "*httpbin.*",
@@ -181,6 +192,7 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		for _, item := range list {
 			time.Sleep(20 * time.Millisecond)
 			_ = c.SetProxy(s.getRandProxy())
+
 			_ = c.Visit(item)
 		}
 	})
@@ -198,14 +210,18 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		}
 		if curPage < totalPage {
 			c.UserAgent = browser.Random()
-			time.Sleep(100 * time.Millisecond)
 			urlStr := fmt.Sprintf("https://zhsc.org/%s/page-%d.htm", poetryType, curPage+1)
 			s.checkUrl = urlStr
+			time.Sleep(time.Duration(100*activeRequests/9) * time.Millisecond)
+			fmt.Printf("****************%+v\n", activeRequests)
 			_ = c.SetProxy(s.getRandProxy())
 			_ = c.Visit(urlStr)
 		}
 	})
 	c.OnResponse(func(r *colly.Response) {
+		mu.Lock()
+		activeRequests--
+		mu.Unlock()
 		// 获取当前访问的 URL
 		urlStr := r.Request.URL.Path
 		fmt.Println("Visiting", urlStr)
@@ -228,12 +244,18 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 	})
 
 	c.OnError(func(r *colly.Response, err error) {
+		mu.Lock()
+		activeRequests--
+		mu.Unlock()
 		//fmt.Println("Request URL:", r.Request.URL, "\nError:", err)
 		_ = c.SetProxy(s.getRandProxy())
 		_ = c.Visit(r.Request.URL.String())
 	})
 	c.OnRequest(func(r *colly.Request) {
 		//fmt.Println("Visiting", r.URL)
+		mu.Lock()
+		activeRequests++
+		mu.Unlock()
 	})
 	_ = c.SetProxy(s.getRandProxy())
 	//还差 3160-4500
@@ -250,6 +272,7 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 	s.endPage = s.getPoetryPage(poetryType, "end")
 	urlStr := fmt.Sprintf("https://zhsc.org/%s/page-%d.htm", poetryType, startPage)
 	s.checkUrl = urlStr
+
 	_ = c.Visit(urlStr)
 }
 func (s *PoetrySpider) parsePoetry(poetryId, poetryType string, e *goquery.Selection) {
