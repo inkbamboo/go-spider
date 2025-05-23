@@ -92,6 +92,9 @@ func (s *PoetrySpider) setCacheProxy(proxyList []*ProxyInfo) {
 func (s *PoetrySpider) checkProxy(proxyList []*ProxyInfo) []*ProxyInfo {
 	var resultList []*ProxyInfo
 	for _, proxyInfo := range proxyList {
+		if proxyInfo.Ttl < 600 {
+			continue
+		}
 		proxyUrl, _ := url.Parse(fmt.Sprintf("http://%s:%s@%s:%d", proxyInfo.Username, proxyInfo.Password, proxyInfo.Ip, proxyInfo.Port))
 		// 发送请求
 		resp, err := resty.New().SetProxy(proxyUrl.String()).R().Get(s.checkUrl)
@@ -192,7 +195,6 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		for _, item := range list {
 			time.Sleep(20 * time.Millisecond)
 			_ = c.SetProxy(s.getRandProxy())
-
 			_ = c.Visit(item)
 		}
 	})
@@ -212,8 +214,8 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 			c.UserAgent = browser.Random()
 			urlStr := fmt.Sprintf("https://zhsc.org/%s/page-%d.htm", poetryType, curPage+1)
 			s.checkUrl = urlStr
+			fmt.Printf("****************activeRequests %+v\n", activeRequests)
 			time.Sleep(time.Duration(100*activeRequests/9) * time.Millisecond)
-			fmt.Printf("****************%+v\n", activeRequests)
 			_ = c.SetProxy(s.getRandProxy())
 			_ = c.Visit(urlStr)
 		}
@@ -247,6 +249,8 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		mu.Lock()
 		activeRequests--
 		mu.Unlock()
+		time.Sleep(time.Duration(20*activeRequests/9) * time.Millisecond)
+		fmt.Printf("****************OnError activeRequests %+v\n", activeRequests)
 		//fmt.Println("Request URL:", r.Request.URL, "\nError:", err)
 		_ = c.SetProxy(s.getRandProxy())
 		_ = c.Visit(r.Request.URL.String())
