@@ -43,8 +43,8 @@ func NewPoetrySpider() *PoetrySpider {
 }
 
 func (s *PoetrySpider) Start() {
-	//s.startPoetry(consts.Shi.Name())
-	s.startPoetry(consts.Ci.Name())
+	s.startPoetry(consts.Shi.Name())
+	//s.startPoetry(consts.Ci.Name())
 	//s.startPoetry(consts.Qu.Name())
 	//s.startPoetry(consts.Fu.Name())
 	//s.startPoetry(consts.Wen.Name())
@@ -167,19 +167,22 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 	//随机设置User-Agent
 	extensions.RandomUserAgent(c)
 	c.OnHTML(".item-list", func(e *colly.HTMLElement) {
+		var list []string
 		e.DOM.Find(".item-btn").Each(func(i int, selection *goquery.Selection) {
 			hrefStr, _ := selection.Attr("href")
 			if hrefStr == "" {
 				return
 			}
-			time.Sleep(50 * time.Millisecond)
 			poetryId := strings.TrimSuffix(strings.TrimPrefix(hrefStr, "/work/work-"), ".htm")
 			if !services.GetPoetryService().PoetryExists(poetryId, "zhsc_poetry") {
-				_ = c.SetProxy(s.getRandProxy())
-				_ = c.Visit(fmt.Sprintf("https://zhsc.org%s", hrefStr))
+				list = append(list, fmt.Sprintf("https://zhsc.org%s", hrefStr))
 			}
-
 		})
+		for _, item := range list {
+			time.Sleep(20 * time.Millisecond)
+			_ = c.SetProxy(s.getRandProxy())
+			_ = c.Visit(item)
+		}
 	})
 	c.OnHTML(".pagination", func(e *colly.HTMLElement) {
 		curPage := cast.ToInt64(strings.TrimSpace(e.DOM.Find(".active").Find("span").Text()))

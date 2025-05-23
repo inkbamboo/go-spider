@@ -98,15 +98,15 @@ func RunTest() {
 	//batchSize := 2000
 	//for {
 	//	var hasNext bool
-	//	//if hasNext, startId = getOneBatchPoetry(startId, batchSize); !hasNext {
-	//	//	break
-	//	//}
+	//	if hasNext, startId = getOneBatchPoetry(startId, batchSize); !hasNext {
+	//		break
+	//	}
 	//	//if hasNext, startId = getOneBatchAuthor(startId, batchSize); !hasNext {
 	//	//	break
 	//	//}
-	//	if hasNext, startId = getOneBatchInterpret(startId, batchSize); !hasNext {
-	//		break
-	//	}
+	//	//if hasNext, startId = getOneBatchInterpret(startId, batchSize); !hasNext {
+	//	//	break
+	//	//}
 	//}
 	select {}
 }
