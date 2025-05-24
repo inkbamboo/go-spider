@@ -249,8 +249,7 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		mu.Lock()
 		activeRequests--
 		mu.Unlock()
-		time.Sleep(time.Duration(20*activeRequests/9) * time.Millisecond)
-		fmt.Printf("****************OnError activeRequests %+v\n", activeRequests)
+		time.Sleep(time.Duration(20*(1+activeRequests/9)) * time.Millisecond)
 		//fmt.Println("Request URL:", r.Request.URL, "\nError:", err)
 		_ = c.SetProxy(s.getRandProxy())
 		_ = c.Visit(r.Request.URL.String())
@@ -262,21 +261,11 @@ func (s *PoetrySpider) startPoetry(poetryType string) {
 		mu.Unlock()
 	})
 	_ = c.SetProxy(s.getRandProxy())
-	//还差 3160-4500
-	//s.endPage = 4500
-	//urlStr := fmt.Sprintf("https://zhsc.org/%s/page-3160.htm", poetryType)
-	//从 1 开始
-	//urlStr:=fmt.Sprintf("https://zhsc.org/%s/page-3956.htm", poetryType)
-
-	// 从 60000 开始
-	//s.endPage = 72800
-	//urlStr := fmt.Sprintf("https://zhsc.org/%s/page-67003.htm", poetryType)
-	// 从 72800 开始
+	//差  5000-52000 开始
 	startPage := s.getPoetryPage(poetryType, "start")
 	s.endPage = s.getPoetryPage(poetryType, "end")
 	urlStr := fmt.Sprintf("https://zhsc.org/%s/page-%d.htm", poetryType, startPage)
 	s.checkUrl = urlStr
-
 	_ = c.Visit(urlStr)
 }
 func (s *PoetrySpider) parsePoetry(poetryId, poetryType string, e *goquery.Selection) {
